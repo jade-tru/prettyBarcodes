@@ -18,6 +18,14 @@
             max-width: 600px;
             height: auto;
         }
+        #focusedBarcodeCanvas {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+        canvas {
+            background-color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4 md:p-8">
@@ -38,6 +46,7 @@
                                 <option value="CODE128">Code 128</option>
                                 <option value="CODE39">Code 39</option>
                                 <option value="CODE39-MOD43">Code 39 (Check Digit)</option>
+                                <option value="CODE93">Code 93</option>
                                 <option value="qrcode">QR Code</option>
                                 <option value="datamatrix">Data Matrix</option>
                             </select>
@@ -62,7 +71,7 @@
 
         <section class="mb-12">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Common Barcode Symbologies</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                 <div onclick="showFocusedView('code39')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
                     <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">Code39</h3>
                     <div class="w-full h-28 flex items-center justify-center"><svg id="code39Barcode"></svg></div>
@@ -77,6 +86,11 @@
                     <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-400">Code128</h3>
                     <div class="w-full h-28 flex items-center justify-center"><svg id="code128Barcode"></svg></div>
                     <p id="code128Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+                </div>
+                <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+                    <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">Code93</h3>
+                    <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode"></canvas></div>
+                    <p id="code93Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
                 </div>
                  <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
                     <h3 class="text-xl font-semibold mb-4 text-fuchsia-600 dark:text-fuchsia-400">QR Code</h3>
@@ -183,6 +197,7 @@
         // --- Barcode Generation Logic ---
         function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
         function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
+        function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
         function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGTH); }
 
         // --- AWB GENERATORS ---
@@ -278,6 +293,10 @@
             const code128Val = generateCode128Value();
             document.getElementById('code128Value').textContent = code128Val;
             render1DBarcode('code128Barcode', code128Val, { format: "CODE128" });
+
+            const code93Val = generateCode93Value();
+            document.getElementById('code93Value').textContent = code93Val;
+            render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
 
             const qrVal = generate2DCodeValue();
             document.getElementById('qrCodeValue').textContent = qrVal;
@@ -380,12 +399,15 @@
                 case 'code128':
                     title = 'Code128'; generatorFn = generateCode128Value;
                     renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+                case 'code93':
+                    title = 'Code93'; generatorFn = generateCode93Value;
+                    is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
                 case 'qr':
                     title = 'QR Code'; generatorFn = generate2DCodeValue;
-                    is2D = true; renderOptions = { bcid: 'qrcode', scale: 10, width: 30, height: 30 }; break;
+                    is2D = true; renderOptions = { bcid: 'qrcode', scale: 5, width: 20, height: 20 }; break;
                 case 'datamatrix':
                     title = 'Data Matrix'; generatorFn = generate2DCodeValue;
-                    is2D = true; renderOptions = { bcid: 'datamatrix', scale: 10, width: 30, height: 30 }; break;
+                    is2D = true; renderOptions = { bcid: 'datamatrix', scale: 5, width: 20, height: 20 }; break;
                 case 'ups':
                     title = 'UPS Tracking'; generatorFn = generateUPSTracking;
                     renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
