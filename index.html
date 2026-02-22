@@ -89,7 +89,7 @@
                 </div>
                 <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
                     <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">Code93</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode"></canvas></div>
+                    <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode" class="p-1 h-1/2 w-full"></canvas></div>
                     <p id="code93Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
                 </div>
                  <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
@@ -259,16 +259,19 @@
 
             try {
                 valueDisplay.textContent = data;
-                if (type === 'qrcode' || type === 'datamatrix') {
-                    canvasEl.classList.remove('hidden');
-                    render2DCode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
-                } else if (type === 'CODE39-MOD43') {
-                     svgEl.classList.remove('hidden');
-                     render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-                } else {
-                    svgEl.classList.remove('hidden');
-                    render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
-                }
+            if (type === 'qrcode' || type === 'datamatrix') {
+                canvasEl.classList.remove('hidden');
+                render2DCode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
+            } else if (type === 'CODE39-MOD43') {
+                svgEl.classList.remove('hidden');
+                render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
+            } else if (type === 'CODE93') {
+                canvasEl.classList.remove('hidden');
+                render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
+            } else {
+                svgEl.classList.remove('hidden');
+                render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
+            }
             } catch (e) {
                 console.error("Barcode Generation Error:", e);
                 valueDisplay.textContent = '';
@@ -344,7 +347,7 @@
 
             const type = document.getElementById('customType').value;
             const is2D = type === 'qrcode' || type === 'datamatrix';
-
+            
             document.getElementById('mainGrid').classList.add('hidden');
             const focusedView = document.getElementById('focusedView');
             focusedView.classList.remove('hidden');
@@ -368,10 +371,13 @@
 
             if (is2D) {
                 canvasEl.classList.remove('hidden');
-                render2DCode('focusedBarcodeCanvas', data, type, { scale: 10, width: 30, height: 30 });
+                render2DCode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
             } else if (type === 'CODE39-MOD43') {
                 svgEl.classList.remove('hidden');
                 render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
+            } else if (type === 'CODE93') {
+                canvasEl.classList.remove('hidden');
+                render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
             } else {
                 svgEl.classList.remove('hidden');
                 render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
