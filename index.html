@@ -1,484 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.1.1/dist/bwip-js-min.js"></script>
-    <style>
-        /* Custom font */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Ensure the focused view elements can grow */
-        #focusedBarcodeContainer > * {
-            max-width: 600px;
-            height: auto;
-        }
-        #focusedBarcodeCanvas {
-            max-width: 100%;
-            max-height: 60vh;
-            object-fit: contain;
-        }
-        canvas {
-            background-color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barcode Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.1.1/dist/bwip-js-min.js"></script>
+  <style>
+    /* Custom font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Ensure the focused view elements can grow */
+    #focusedBarcodeContainer > * {
+      max-width: 600px;
+      height: auto;
+    }
+    #focusedBarcodeCanvas {
+      max-width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+    }
+    canvas {
+      background-color: white;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4 md:p-8">
 
-    <div id="mainGrid" class="w-full max-w-7xl mx-auto">
-        <header class="text-center mb-10 flex items-center justify-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Barcode Generator</h1>
-        </header>
+  <div id="mainGrid" class="w-full max-w-7xl mx-auto">
+    <header class="text-center mb-10 flex items-center justify-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Barcode Generator</h1>
+    </header>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Create Your Own Barcode</h2>
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                    <div class="md:col-span-1 space-y-4">
-                        <div>
-                            <label for="customType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode Type</label>
-                            <select id="customType" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="CODE128">Code 128</option>
-                                <option value="CODE39">Code 39</option>
-                                <option value="CODE39-MOD43">Code 39 (Check Digit)</option>
-                                <option value="CODE93">Code 93</option>
-                                <option value="qrcode">QR Code</option>
-                                <option value="datamatrix">Data Matrix</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="customData" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data</label>
-                            <input type="text" id="customData" placeholder="Enter barcode data here" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <button id="generateCustomBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition-colors">Generate</button>
-                    </div>
-                    <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] cursor-pointer group">
-                        <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                            <svg id="customBarcodeSvg" class="hidden"></svg>
-                            <canvas id="customBarcodeCanvas" class="hidden"></canvas>
-                        </div>
-                        <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
-                        <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>
-                    </div>
-                </div>
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Create Your Own Barcode</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <div class="md:col-span-1 space-y-4">
+            <div>
+              <label for="customType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode Type</label>
+              <select id="customType" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="CODE128">Code 128</option>
+                <option value="CODE39">Code 39</option>
+                <option value="CODE39-MOD43">Code 39 (Check Digit)</option>
+                <option value="CODE93">Code 93</option>
+                <option value="qrcode">QR Code</option>
+                <option value="datamatrix">Data Matrix</option>
+              </select>
             </div>
-        </section>
-
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Common Barcode Symbologies</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-                <div onclick="showFocusedView('code39')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">Code39</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="code39Barcode"></svg></div>
-                    <p id="code39Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('code39check')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-sky-600 dark:text-sky-400">Code39 (Check Digit)</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="code39CheckDigitBarcode"></svg></div>
-                    <p id="code39CheckDigitValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('code128')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-400">Code128</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="code128Barcode"></svg></div>
-                    <p id="code128Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">Code93</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode" class="p-1 h-1/2 w-full"></canvas></div>
-                    <p id="code93Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                 <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-fuchsia-600 dark:text-fuchsia-400">QR Code</h3>
-                    <div class="w-28 h-28 flex items-center justify-center"><canvas id="qrCode"></canvas></div>
-                    <p id="qrCodeValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
-                </div>
-                <div onclick="showFocusedView('datamatrix')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Data Matrix</h3>
-                    <div class="w-28 h-28 flex items-center justify-center"><canvas id="dataMatrixCode"></canvas></div>
-                    <p id="dataMatrixValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
-                </div>
+            <div>
+                <label for="customData" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data</label>
+                <input type="text" id="customData" placeholder="Enter barcode data here" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
-        </section>
-
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Shipment Tracking Labels</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-                <div onclick="showFocusedView('ups')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-yellow-500">UPS Tracking</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="upsBarcode"></svg></div>
-                    <p id="upsValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('fedex')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">FedEx Tracking</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="fedexBarcode"></svg></div>
-                    <p id="fedexValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('dhl')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-red-600 dark:text-red-500">DHL Tracking</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="dhlBarcode"></svg></div>
-                    <p id="dhlValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('marken')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-green-600 dark:text-green-400">Marken Tracking</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="markenBarcode"></svg></div>
-                    <p id="markenValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                 <div onclick="showFocusedView('worldcourier')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-blue-600 dark:text-blue-400">World Courier</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="worldCourierBarcode"></svg></div>
-                    <p id="worldCourierValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-                <div onclick="showFocusedView('quickstat')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-indigo-600 dark:text-indigo-400">Quickstat</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="quickstatBarcode"></svg></div>
-                    <p id="quickstatValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Sponsor / Lab Specific</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-                <div onclick="showFocusedView('mlm')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-                    <h3 class="text-xl font-semibold mb-4 text-teal-600 dark:text-teal-400">MLM</h3>
-                    <div class="w-full h-28 flex items-center justify-center"><svg id="mlmBarcode"></svg></div>
-                    <p id="mlmValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <div id="focusedView" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex-col items-center justify-center p-8 hidden z-50">
-        <h2 id="focusedTitle" class="text-4xl font-bold text-white mb-8"></h2>
-        <div id="focusedBarcodeContainer" class="bg-white p-8 rounded-lg">
-            <svg id="focusedBarcodeSvg" class="hidden"></svg>
-            <canvas id="focusedBarcodeCanvas" class="hidden"></canvas>
+            <button id="generateCustomBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition-colors">Generate</button>
         </div>
-        <p id="focusedValue" class="mt-6 text-2xl font-mono bg-gray-700 text-white px-4 py-2 rounded-md"></p>
-        <button onclick="hideFocusedView()" class="mt-8 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors text-lg">Close</button>
+        <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] cursor-pointer group">
+            <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+                <svg id="customBarcodeSvg" class="hidden"></svg>
+                <canvas id="customBarcodeCanvas" class="hidden"></canvas>
+            </div>
+            <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
+            <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Common Barcode Symbologies</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div onclick="showFocusedView('code39')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">Code39</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="code39Barcode"></svg></div>
+          <p id="code39Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('code39check')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-sky-600 dark:text-sky-400">Code39 (Check Digit)</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="code39CheckDigitBarcode"></svg></div>
+          <p id="code39CheckDigitValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('code128')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-400">Code128</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="code128Barcode"></svg></div>
+          <p id="code128Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">Code93</h3>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode" class="p-1 h-1/2 w-full"></canvas></div>
+          <p id="code93Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+          <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-fuchsia-600 dark:text-fuchsia-400">QR Code</h3>
+          <div class="w-28 h-28 flex items-center justify-center"><canvas id="qrCode"></canvas></div>
+          <p id="qrCodeValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
+        </div>
+        <div onclick="showFocusedView('datamatrix')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Data Matrix</h3>
+          <div class="w-28 h-28 flex items-center justify-center"><canvas id="dataMatrixCode"></canvas></div>
+          <p id="dataMatrixValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Shipment Tracking Labels</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div onclick="showFocusedView('ups')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-yellow-500">UPS Tracking</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="upsBarcode"></svg></div>
+          <p id="upsValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('fedex')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">FedEx Tracking</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="fedexBarcode"></svg></div>
+          <p id="fedexValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('dhl')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-red-600 dark:text-red-500">DHL Tracking</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="dhlBarcode"></svg></div>
+          <p id="dhlValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('marken')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-green-600 dark:text-green-400">Marken Tracking</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="markenBarcode"></svg></div>
+          <p id="markenValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+          <div onclick="showFocusedView('worldcourier')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-blue-600 dark:text-blue-400">World Courier</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="worldCourierBarcode"></svg></div>
+          <p id="worldCourierValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('quickstat')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-indigo-600 dark:text-indigo-400">Quickstat</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="quickstatBarcode"></svg></div>
+          <p id="quickstatValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Sponsor / Lab Specific</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div onclick="showFocusedView('mlm')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-teal-600 dark:text-teal-400">MLM</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="mlmBarcode"></svg></div>
+          <p id="mlmValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="focusedView" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex-col items-center justify-center p-8 hidden z-50">
+    <h2 id="focusedTitle" class="text-4xl font-bold text-white mb-8"></h2>
+    <div id="focusedBarcodeContainer" class="bg-white p-8 rounded-lg">
+      <svg id="focusedBarcodeSvg" class="hidden"></svg>
+      <canvas id="focusedBarcodeCanvas" class="hidden"></canvas>
     </div>
+    <p id="focusedValue" class="mt-6 text-2xl font-mono bg-gray-700 text-white px-4 py-2 rounded-md"></p>
+    <button onclick="hideFocusedView()" class="mt-8 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors text-lg">Close</button>
+  </div>
 
 
-    <script>
-        // --- Configuration ---
-        const GENERIC_BARCODE_LENGTH = 10;
-        const QR_DATA_LENGTH = 16;
-        const GRID_UPDATE_INTERVAL = 1500;
-        const FOCUSED_UPDATE_INTERVAL = 2000;
+  <script>
+    // --- Configuration ---
+    const GENERIC_BARCODE_LENGTH = 10;
+    const QR_DATA_LENGTH = 16;
+    const GRID_UPDATE_INTERVAL = 1500;
+    const FOCUSED_UPDATE_INTERVAL = 2000;
+    
+    let focusedIntervalId = null;
+
+    // --- Helper Functions ---
+    function generateRandomString(length, characters) {
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      return result;
+    }
+    
+    function generateRandomAlphanumeric(length, uppercaseOnly = false) {
+      const chars = uppercaseOnly 
+        ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' 
+        : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      return generateRandomString(length, chars);
+    }
+
+    function generateRandomNumeric(length) {
+      return generateRandomString(length, '0123456789');
+    }
+
+    // --- Barcode Generation Logic ---
+    function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
+    function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
+    function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
+    function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGTH); }
+
+    // --- AWB GENERATORS ---
+    function generateUPSTracking() { return '1Z' + generateRandomAlphanumeric(16, true); } 
+    function generateFedExTracking() { return generateRandomNumeric(12); } 
+    function generateDHLTracking() { return generateRandomNumeric(10); } 
+    function generateMarkenTracking() { return generateRandomNumeric(3) + 'X' + generateRandomNumeric(8); } 
+    function generateWorldCourierTracking() {
+      const length = Math.floor(Math.random() * 3) + 9; 
+      return generateRandomNumeric(length); 
+    }
+    function generateQuickstatTracking() { return generateRandomNumeric(9) + 'W'; }
+    
+    // --- LAB SPECIFIC GENERATORS (Added MLM) ---
+    function generateMLMBarcode() { return generateRandomNumeric(12); }
+
+
+    // --- Rendering Functions ---
+    function render1DBarcode(elementId, value, options = {}) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const defaultOptions = {
+        lineColor: document.body.classList.contains('dark') ? "#FFFFFF" : "#000000",
+        width: 2, height: 80, displayValue: false
+      };
+      JsBarcode(el, value, { ...defaultOptions, ...options });
+    }
+
+    function render2DCode(elementId, value, type, options = {}) {
+      const canvas = document.getElementById(elementId);
+      if (!canvas) return;
+      const defaultOptions = {
+        bcid: type, text: value, scale: 3,
+        height: 10, width: 10, includetext: false,
+      };
+      bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
+    }
+
+    // --- Custom Barcode Generator ---
+    function generateCustomBarcode() {
+      const type = document.getElementById('customType').value;
+      const data = document.getElementById('customData').value;
+      
+      const svgEl = document.getElementById('customBarcodeSvg');
+      const canvasEl = document.getElementById('customBarcodeCanvas');
+      const valueDisplay = document.getElementById('customValueDisplay');
+      const errorDisplay = document.getElementById('customErrorDisplay');
+
+      // Reset UI
+      svgEl.classList.add('hidden');
+      canvasEl.classList.add('hidden');
+      valueDisplay.textContent = '';
+      errorDisplay.textContent = '';
+
+      if (!data.trim()) {
+        errorDisplay.textContent = 'Please enter data for the barcode.';
+        return;
+      }
+
+      try {
+        valueDisplay.textContent = data;
+      if (type === 'qrcode' || type === 'datamatrix') {
+        canvasEl.classList.remove('hidden');
+        render2DCode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
+      } else if (type === 'CODE39-MOD43') {
+        svgEl.classList.remove('hidden');
+        render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
+      } else if (type === 'CODE93') {
+        canvasEl.classList.remove('hidden');
+        render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
+      } else {
+        svgEl.classList.remove('hidden');
+        render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
+      }
+      } catch (e) {
+        console.error("Barcode Generation Error:", e);
+        valueDisplay.textContent = '';
+        errorDisplay.textContent = e.message.includes('Invalid') 
+          ? `Invalid characters for ${type}.`
+          : 'Could not generate barcode.';
+      }
+    }
+
+
+    // --- Main Grid Update ---
+    function updateAllBarcodes() {
+      // Symbologies
+      const code39Val = generateCode39Value();
+      document.getElementById('code39Value').textContent = code39Val;
+      render1DBarcode('code39Barcode', code39Val, { format: "CODE39" });
+
+      const code39CheckDigitVal = generateCode39Value();
+      document.getElementById('code39CheckDigitValue').textContent = code39CheckDigitVal;
+      render1DBarcode('code39CheckDigitBarcode', code39CheckDigitVal, { format: "CODE39", mod43: true });
+
+      const code128Val = generateCode128Value();
+      document.getElementById('code128Value').textContent = code128Val;
+      render1DBarcode('code128Barcode', code128Val, { format: "CODE128" });
+
+      const code93Val = generateCode93Value();
+      document.getElementById('code93Value').textContent = code93Val;
+      render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
+
+      const qrVal = generate2DCodeValue();
+      document.getElementById('qrCodeValue').textContent = qrVal;
+      render2DCode('qrCode', qrVal, 'qrcode');
+
+      const dmVal = generate2DCodeValue();
+      document.getElementById('dataMatrixValue').textContent = dmVal;
+      render2DCode('dataMatrixCode', dmVal, 'datamatrix');
+
+      // Shipment Labels
+      const upsVal = generateUPSTracking();
+      document.getElementById('upsValue').textContent = upsVal;
+      render1DBarcode('upsBarcode', upsVal, { format: "CODE128" });
+
+      const fedexVal = generateFedExTracking();
+      document.getElementById('fedexValue').textContent = fedexVal;
+      render1DBarcode('fedexBarcode', fedexVal, { format: "CODE128" });
+
+      const dhlVal = generateDHLTracking();
+      document.getElementById('dhlValue').textContent = dhlVal;
+      render1DBarcode('dhlBarcode', dhlVal, { format: "CODE128" });
+
+      const markenVal = generateMarkenTracking();
+      document.getElementById('markenValue').textContent = markenVal;
+      render1DBarcode('markenBarcode', markenVal, { format: "CODE128" });
+      
+      const wcVal = generateWorldCourierTracking();
+      document.getElementById('worldCourierValue').textContent = wcVal;
+      render1DBarcode('worldCourierBarcode', wcVal, { format: "CODE128" });
+
+      const quickstatVal = generateQuickstatTracking();
+      document.getElementById('quickstatValue').textContent = quickstatVal;
+      render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
+
+      // Lab Specific (MLM Added Here)
+      const mlmVal = generateMLMBarcode();
+      document.getElementById('mlmValue').textContent = mlmVal;
+      render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
+    }
+
+    // --- Focused View Logic ---
+    function showFocusedCustom() {
+      const data = document.getElementById('customValueDisplay').textContent;
+      if (!data) return; // Don't open modal if no barcode is generated
+
+      const type = document.getElementById('customType').value;
+      const is2D = type === 'qrcode' || type === 'datamatrix';
+      
+      document.getElementById('mainGrid').classList.add('hidden');
+      const focusedView = document.getElementById('focusedView');
+      focusedView.classList.remove('hidden');
+      focusedView.classList.add('flex');
+
+      if (focusedIntervalId) {
+        clearInterval(focusedIntervalId);
+        focusedIntervalId = null;
+      }
+
+      const svgEl = document.getElementById('focusedBarcodeSvg');
+      const canvasEl = document.getElementById('focusedBarcodeCanvas');
+      
+      const typeSelect = document.getElementById('customType');
+      const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
+      document.getElementById('focusedTitle').textContent = selectedOptionText;
+      document.getElementById('focusedValue').textContent = data;
+
+      svgEl.classList.add('hidden');
+      canvasEl.classList.add('hidden');
+
+      if (is2D) {
+        canvasEl.classList.remove('hidden');
+        render2DCode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
+      } else if (type === 'CODE39-MOD43') {
+        svgEl.classList.remove('hidden');
+        render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
+      } else if (type === 'CODE93') {
+        canvasEl.classList.remove('hidden');
+        render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
+      } else {
+        svgEl.classList.remove('hidden');
+        render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
+      }
+    }
+    
+    function showFocusedView(barcodeType) {
+      document.getElementById('mainGrid').classList.add('hidden');
+      const focusedView = document.getElementById('focusedView');
+      focusedView.classList.remove('hidden');
+      focusedView.classList.add('flex');
+      
+      const svgEl = document.getElementById('focusedBarcodeSvg');
+      const canvasEl = document.getElementById('focusedBarcodeCanvas');
+
+      let generatorFn, title, is2D = false, renderOptions;
+
+      switch (barcodeType) {
+        case 'code39':
+          title = 'Code39'; generatorFn = generateCode39Value;
+          renderOptions = { format: "CODE39", height: 150, width: 4 }; break;
+        case 'code39check':
+          title = 'Code39 (Check Digit)'; generatorFn = generateCode39Value;
+          renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
+        case 'code128':
+          title = 'Code128'; generatorFn = generateCode128Value;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'code93':
+          title = 'Code93'; generatorFn = generateCode93Value;
+          is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
+        case 'qr':
+          title = 'QR Code'; generatorFn = generate2DCodeValue;
+          is2D = true; renderOptions = { bcid: 'qrcode', scale: 5, width: 20, height: 20 }; break;
+        case 'datamatrix':
+          title = 'Data Matrix'; generatorFn = generate2DCodeValue;
+          is2D = true; renderOptions = { bcid: 'datamatrix', scale: 5, width: 20, height: 20 }; break;
+        case 'ups':
+          title = 'UPS Tracking'; generatorFn = generateUPSTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'fedex':
+          title = 'FedEx Tracking'; generatorFn = generateFedExTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'dhl':
+          title = 'DHL Tracking'; generatorFn = generateDHLTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'marken':
+          title = 'Marken Tracking'; generatorFn = generateMarkenTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'worldcourier':
+          title = 'World Courier'; generatorFn = generateWorldCourierTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+        case 'quickstat':
+          title = 'Quickstat'; generatorFn = generateQuickstatTracking;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
         
-        let focusedIntervalId = null;
+        // --- ADDED MLM CASE ---
+        case 'mlm':
+          title = 'MLM'; generatorFn = generateMLMBarcode;
+          renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+      }
 
-        // --- Helper Functions ---
-        function generateRandomString(length, characters) {
-            let result = '';
-            for (let i = 0; i < length; i++) {
-                result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
+      document.getElementById('focusedTitle').textContent = title;
+      svgEl.classList.add('hidden');
+      canvasEl.classList.add('hidden');
+      is2D ? canvasEl.classList.remove('hidden') : svgEl.classList.remove('hidden');
+
+      const updateFocused = () => {
+        const newValue = generatorFn();
+        document.getElementById('focusedValue').textContent = newValue;
+        if (is2D) {
+          render2DCode('focusedBarcodeCanvas', newValue, renderOptions.bcid, renderOptions);
+        } else {
+          render1DBarcode('focusedBarcodeSvg', newValue, renderOptions);
         }
-        
-        function generateRandomAlphanumeric(length, uppercaseOnly = false) {
-            const chars = uppercaseOnly 
-                ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' 
-                : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            return generateRandomString(length, chars);
-        }
+      };
+      updateFocused();
+      focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+    }
 
-        function generateRandomNumeric(length) {
-            return generateRandomString(length, '0123456789');
-        }
+    function hideFocusedView() {
+      document.getElementById('focusedView').classList.add('hidden');
+      document.getElementById('focusedView').classList.remove('flex');
+      document.getElementById('mainGrid').classList.remove('hidden');
+      
+      // Explicitly hide these for cleanliness
+      document.getElementById('focusedBarcodeSvg').classList.add('hidden');
+      document.getElementById('focusedBarcodeCanvas').classList.add('hidden');
 
-        // --- Barcode Generation Logic ---
-        function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
-        function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
-        function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
-        function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGTH); }
+      if (focusedIntervalId) {
+        clearInterval(focusedIntervalId);
+        focusedIntervalId = null;
+      }
+    }
 
-        // --- AWB GENERATORS ---
-        function generateUPSTracking() { return '1Z' + generateRandomAlphanumeric(16, true); } 
-        function generateFedExTracking() { return generateRandomNumeric(12); } 
-        function generateDHLTracking() { return generateRandomNumeric(10); } 
-        function generateMarkenTracking() { return generateRandomNumeric(3) + 'X' + generateRandomNumeric(8); } 
-        function generateWorldCourierTracking() {
-            const length = Math.floor(Math.random() * 3) + 9; 
-            return generateRandomNumeric(length); 
-        }
-        function generateQuickstatTracking() { return generateRandomNumeric(9) + 'W'; }
-        
-        // --- LAB SPECIFIC GENERATORS (Added MLM) ---
-        function generateMLMBarcode() { return generateRandomNumeric(12); }
-
-
-        // --- Rendering Functions ---
-        function render1DBarcode(elementId, value, options = {}) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const defaultOptions = {
-                lineColor: document.body.classList.contains('dark') ? "#FFFFFF" : "#000000",
-                width: 2, height: 80, displayValue: false
-            };
-            JsBarcode(el, value, { ...defaultOptions, ...options });
-        }
-
-        function render2DCode(elementId, value, type, options = {}) {
-             const canvas = document.getElementById(elementId);
-             if (!canvas) return;
-             const defaultOptions = {
-                 bcid: type, text: value, scale: 3,
-                 height: 10, width: 10, includetext: false,
-             };
-             bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
-        }
-
-        // --- Custom Barcode Generator ---
-        function generateCustomBarcode() {
-            const type = document.getElementById('customType').value;
-            const data = document.getElementById('customData').value;
-            
-            const svgEl = document.getElementById('customBarcodeSvg');
-            const canvasEl = document.getElementById('customBarcodeCanvas');
-            const valueDisplay = document.getElementById('customValueDisplay');
-            const errorDisplay = document.getElementById('customErrorDisplay');
-
-            // Reset UI
-            svgEl.classList.add('hidden');
-            canvasEl.classList.add('hidden');
-            valueDisplay.textContent = '';
-            errorDisplay.textContent = '';
-
-            if (!data.trim()) {
-                errorDisplay.textContent = 'Please enter data for the barcode.';
-                return;
-            }
-
-            try {
-                valueDisplay.textContent = data;
-            if (type === 'qrcode' || type === 'datamatrix') {
-                canvasEl.classList.remove('hidden');
-                render2DCode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
-            } else if (type === 'CODE39-MOD43') {
-                svgEl.classList.remove('hidden');
-                render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-            } else if (type === 'CODE93') {
-                canvasEl.classList.remove('hidden');
-                render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
-            } else {
-                svgEl.classList.remove('hidden');
-                render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
-            }
-            } catch (e) {
-                console.error("Barcode Generation Error:", e);
-                valueDisplay.textContent = '';
-                errorDisplay.textContent = e.message.includes('Invalid') 
-                    ? `Invalid characters for ${type}.`
-                    : 'Could not generate barcode.';
-            }
-        }
-
-
-        // --- Main Grid Update ---
-        function updateAllBarcodes() {
-            // Symbologies
-            const code39Val = generateCode39Value();
-            document.getElementById('code39Value').textContent = code39Val;
-            render1DBarcode('code39Barcode', code39Val, { format: "CODE39" });
-
-            const code39CheckDigitVal = generateCode39Value();
-            document.getElementById('code39CheckDigitValue').textContent = code39CheckDigitVal;
-            render1DBarcode('code39CheckDigitBarcode', code39CheckDigitVal, { format: "CODE39", mod43: true });
-
-            const code128Val = generateCode128Value();
-            document.getElementById('code128Value').textContent = code128Val;
-            render1DBarcode('code128Barcode', code128Val, { format: "CODE128" });
-
-            const code93Val = generateCode93Value();
-            document.getElementById('code93Value').textContent = code93Val;
-            render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
-
-            const qrVal = generate2DCodeValue();
-            document.getElementById('qrCodeValue').textContent = qrVal;
-            render2DCode('qrCode', qrVal, 'qrcode');
-
-            const dmVal = generate2DCodeValue();
-            document.getElementById('dataMatrixValue').textContent = dmVal;
-            render2DCode('dataMatrixCode', dmVal, 'datamatrix');
-
-            // Shipment Labels
-            const upsVal = generateUPSTracking();
-            document.getElementById('upsValue').textContent = upsVal;
-            render1DBarcode('upsBarcode', upsVal, { format: "CODE128" });
-
-            const fedexVal = generateFedExTracking();
-            document.getElementById('fedexValue').textContent = fedexVal;
-            render1DBarcode('fedexBarcode', fedexVal, { format: "CODE128" });
-
-            const dhlVal = generateDHLTracking();
-            document.getElementById('dhlValue').textContent = dhlVal;
-            render1DBarcode('dhlBarcode', dhlVal, { format: "CODE128" });
-
-            const markenVal = generateMarkenTracking();
-            document.getElementById('markenValue').textContent = markenVal;
-            render1DBarcode('markenBarcode', markenVal, { format: "CODE128" });
-            
-            const wcVal = generateWorldCourierTracking();
-            document.getElementById('worldCourierValue').textContent = wcVal;
-            render1DBarcode('worldCourierBarcode', wcVal, { format: "CODE128" });
-
-            const quickstatVal = generateQuickstatTracking();
-            document.getElementById('quickstatValue').textContent = quickstatVal;
-            render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
-
-            // Lab Specific (MLM Added Here)
-            const mlmVal = generateMLMBarcode();
-            document.getElementById('mlmValue').textContent = mlmVal;
-            render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
-        }
-
-        // --- Focused View Logic ---
-        function showFocusedCustom() {
-            const data = document.getElementById('customValueDisplay').textContent;
-            if (!data) return; // Don't open modal if no barcode is generated
-
-            const type = document.getElementById('customType').value;
-            const is2D = type === 'qrcode' || type === 'datamatrix';
-            
-            document.getElementById('mainGrid').classList.add('hidden');
-            const focusedView = document.getElementById('focusedView');
-            focusedView.classList.remove('hidden');
-            focusedView.classList.add('flex');
-
-            if (focusedIntervalId) {
-                clearInterval(focusedIntervalId);
-                focusedIntervalId = null;
-            }
-
-            const svgEl = document.getElementById('focusedBarcodeSvg');
-            const canvasEl = document.getElementById('focusedBarcodeCanvas');
-            
-            const typeSelect = document.getElementById('customType');
-            const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
-            document.getElementById('focusedTitle').textContent = selectedOptionText;
-            document.getElementById('focusedValue').textContent = data;
-
-            svgEl.classList.add('hidden');
-            canvasEl.classList.add('hidden');
-
-            if (is2D) {
-                canvasEl.classList.remove('hidden');
-                render2DCode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
-            } else if (type === 'CODE39-MOD43') {
-                svgEl.classList.remove('hidden');
-                render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
-            } else if (type === 'CODE93') {
-                canvasEl.classList.remove('hidden');
-                render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
-            } else {
-                svgEl.classList.remove('hidden');
-                render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
-            }
-        }
-        
-        function showFocusedView(barcodeType) {
-            document.getElementById('mainGrid').classList.add('hidden');
-            const focusedView = document.getElementById('focusedView');
-            focusedView.classList.remove('hidden');
-            focusedView.classList.add('flex');
-            
-            const svgEl = document.getElementById('focusedBarcodeSvg');
-            const canvasEl = document.getElementById('focusedBarcodeCanvas');
-
-            let generatorFn, title, is2D = false, renderOptions;
-
-            switch (barcodeType) {
-                case 'code39':
-                    title = 'Code39'; generatorFn = generateCode39Value;
-                    renderOptions = { format: "CODE39", height: 150, width: 4 }; break;
-                case 'code39check':
-                    title = 'Code39 (Check Digit)'; generatorFn = generateCode39Value;
-                    renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
-                case 'code128':
-                    title = 'Code128'; generatorFn = generateCode128Value;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'code93':
-                    title = 'Code93'; generatorFn = generateCode93Value;
-                    is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
-                case 'qr':
-                    title = 'QR Code'; generatorFn = generate2DCodeValue;
-                    is2D = true; renderOptions = { bcid: 'qrcode', scale: 5, width: 20, height: 20 }; break;
-                case 'datamatrix':
-                    title = 'Data Matrix'; generatorFn = generate2DCodeValue;
-                    is2D = true; renderOptions = { bcid: 'datamatrix', scale: 5, width: 20, height: 20 }; break;
-                case 'ups':
-                    title = 'UPS Tracking'; generatorFn = generateUPSTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'fedex':
-                    title = 'FedEx Tracking'; generatorFn = generateFedExTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'dhl':
-                    title = 'DHL Tracking'; generatorFn = generateDHLTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'marken':
-                    title = 'Marken Tracking'; generatorFn = generateMarkenTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'worldcourier':
-                    title = 'World Courier'; generatorFn = generateWorldCourierTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                case 'quickstat':
-                    title = 'Quickstat'; generatorFn = generateQuickstatTracking;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-                
-                // --- ADDED MLM CASE ---
-                case 'mlm':
-                    title = 'MLM'; generatorFn = generateMLMBarcode;
-                    renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-            }
-
-            document.getElementById('focusedTitle').textContent = title;
-            svgEl.classList.add('hidden');
-            canvasEl.classList.add('hidden');
-            is2D ? canvasEl.classList.remove('hidden') : svgEl.classList.remove('hidden');
-
-            const updateFocused = () => {
-                const newValue = generatorFn();
-                document.getElementById('focusedValue').textContent = newValue;
-                if (is2D) {
-                    render2DCode('focusedBarcodeCanvas', newValue, renderOptions.bcid, renderOptions);
-                } else {
-                    render1DBarcode('focusedBarcodeSvg', newValue, renderOptions);
-                }
-            };
-            updateFocused();
-            focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
-        }
-
-        function hideFocusedView() {
-            document.getElementById('focusedView').classList.add('hidden');
-            document.getElementById('focusedView').classList.remove('flex');
-            document.getElementById('mainGrid').classList.remove('hidden');
-            
-            // Explicitly hide these for cleanliness
-            document.getElementById('focusedBarcodeSvg').classList.add('hidden');
-            document.getElementById('focusedBarcodeCanvas').classList.add('hidden');
-
-            if (focusedIntervalId) {
-                clearInterval(focusedIntervalId);
-                focusedIntervalId = null;
-            }
-        }
-
-        // --- Initial Load and Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            updateAllBarcodes();
-            setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
-            document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
-        });
-    </script>
+    // --- Initial Load and Event Listeners ---
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAllBarcodes();
+      setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
+      document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
+    });
+  </script>
 
 </body>
 </html>
