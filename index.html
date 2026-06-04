@@ -59,8 +59,8 @@
         </div>
         <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] cursor-pointer group">
             <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                <svg id="customBarcodeSvg" class="hidden"></svg>
-                <canvas id="customBarcodeCanvas" class="hidden"></canvas>
+              <svg id="customBarcodeSvg" class="hidden"></svg>
+              <canvas id="customBarcodeCanvas" class="hidden"></canvas>
             </div>
             <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
             <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>
@@ -170,7 +170,7 @@
     const GENERIC_BARCODE_LENGTH = 10;
     const QR_DATA_LENGTH = 16;
     const GRID_UPDATE_INTERVAL = 1500;
-    const FOCUSED_UPDATE_INTERVAL = 2000;
+    const FOCUSED_UPDATE_INTERVAL = 1500;
     
     let focusedIntervalId = null;
 
