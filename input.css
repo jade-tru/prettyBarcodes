@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* ./tailwindcss -i ./input.css -o ./output.css --watch */
+/* ./tailwindcss -i ./input.css -o ./output.css --minify */
