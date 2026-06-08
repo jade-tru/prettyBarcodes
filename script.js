@@ -7,9 +7,9 @@ const FOCUSED_UPDATE_INTERVAL = 500;
 let focusedIntervalId = null;
 
 // --- Helper Functions ---
-function generateStringFromRegex(regex) {
-  return new RandExp(regex).gen();
-}
+// function generateStringFromRegex(regex) {
+//   return new RandExp(regex).gen();
+// }
 
 function generateRandomString(length, characters) {
   let result = '';
@@ -30,6 +30,23 @@ function generateRandomNumeric(length) {
   return generateRandomString(length, '0123456789');
 }
 
+const BarcodeEngines = {
+  FedEx: new RandExp(/^\d{12}$|^\d{34}$/),
+  Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
+  DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]*)$/)
+};
+
+function generateStringFromEngine(symbologyKey) {
+  const engine = BarcodeEngines[symbologyKey];
+  
+  if (!engine) {
+    console.error(`No pre-compiled engine found for: ${symbologyKey}`);
+    return '';
+  }
+  
+  return engine.gen();
+}
+
 // --- Barcode Generation Logic ---
 function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
 function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
@@ -38,13 +55,10 @@ function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGT
 
 // --- AWB GENERATORS ---
 function generateUPSTracking() { return '1Z' + generateRandomAlphanumeric(16, true); } 
-function generateFedExTracking() { return generateRandomNumeric(12); } 
-function generateDHLTracking() { return generateRandomNumeric(10); } 
-function generateMarkenTracking() { return generateRandomNumeric(3) + 'X' + generateRandomNumeric(8); } 
-function generateWorldCourierTracking() {
-  const length = Math.floor(Math.random() * 3) + 9; 
-  return generateRandomNumeric(length); 
-}
+function generateFedExTracking() { return generateStringFromEngine('FedEx'); }
+function generateDHLTracking() { return generateStringFromEngine('DHL'); }
+function generateMarkenTracking() { return generateStringFromEngine('Marken'); }
+function generateWorldCourierTracking() { return generateRandomNumeric(9); }
 function generateQuickstatTracking() { return generateRandomNumeric(9) + 'W'; }
 
 // --- LAB SPECIFIC GENERATORS (Added MLM) ---
@@ -268,8 +282,6 @@ function showFocusedView(barcodeType) {
     case 'quickstat':
       title = 'Quickstat'; generatorFn = generateQuickstatTracking;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    
-    // --- ADDED MLM CASE ---
     case 'mlm':
       title = 'MLM'; generatorFn = generateMLMBarcode;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
