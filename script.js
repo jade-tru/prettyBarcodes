@@ -31,9 +31,8 @@ function generateRandomNumeric(length) {
 }
 
 const BarcodeEngines = {
-  FedEx: new RandExp(/^\d{12}$|^\d{34}$/),
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
-  DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]*)$/)
+  DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/) // internal regex has a * instead of {6} but that's too much
 };
 
 function generateStringFromEngine(symbologyKey) {
@@ -55,7 +54,7 @@ function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGT
 
 // --- AWB GENERATORS ---
 function generateUPSTracking() { return '1Z' + generateRandomAlphanumeric(16, true); } 
-function generateFedExTracking() { return generateStringFromEngine('FedEx'); }
+function generateFedExTracking() { return generateRandomNumeric(14); } // technically this should be 12-34 digits but that got too long
 function generateDHLTracking() { return generateStringFromEngine('DHL'); }
 function generateMarkenTracking() { return generateStringFromEngine('Marken'); }
 function generateWorldCourierTracking() { return generateRandomNumeric(9); }
