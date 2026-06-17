@@ -51,7 +51,7 @@
                 <option value="CODE128">Code 128</option>
                 <option value="CODE39">Code 39</option>
                 <option value="CODE39-MOD43">Code 39 (Check Digit)</option>
-                <option value="CODE93">Code 93</option>
+                <!-- <option value="CODE93">Code 93</option> -->
                 <option value="qrcode">QR Code</option>
                 <option value="datamatrix">Data Matrix</option>
               </select>
@@ -76,7 +76,7 @@
 
     <section class="mb-12">
       <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Common Barcode Symbologies</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <div onclick="showFocusedView('code39')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">Code39</h3>
           <div class="w-full h-28 flex items-center justify-center"><svg id="code39Barcode"></svg></div>
@@ -92,12 +92,12 @@
           <div class="w-full h-28 flex items-center justify-center"><svg id="code128Barcode"></svg></div>
           <p id="code128Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
-        <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+        <!-- <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">Code93</h3>
           <div class="w-full h-28 flex items-center justify-center"><canvas id="code93Barcode" class="p-1 h-1/2 w-full"></canvas></div>
           <p id="code93Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
-        </div>
-          <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+        </div> -->
+        <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-fuchsia-600 dark:text-fuchsia-400">QR Code</h3>
           <div class="w-28 h-28 flex items-center justify-center"><canvas id="qrCode"></canvas></div>
           <p id="qrCodeValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
@@ -147,12 +147,27 @@
     </section>
 
     <section class="mb-12">
-      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Sponsor / Lab Specific</h2>
+      <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">Specific Regexes</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <div onclick="showFocusedView('mlm')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
-          <h3 class="text-xl font-semibold mb-4 text-teal-600 dark:text-teal-400">MLM</h3>
+          <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">^\d{12}$</h3>
           <div class="w-full h-28 flex items-center justify-center"><svg id="mlmBarcode"></svg></div>
           <p id="mlmValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('pScanned')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">^[0-9A-HJ-NP-TV-Z]+$ (Limited to 6)</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="pScannedBarcode"></svg></div>
+          <p id="pScannedValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('pSiteSwab')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-teal-600 dark:text-teal-400">^[0-9A-HJ-NP-TV-Z]{6}$</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="pSiteSwabBarcode"></svg></div>
+          <p id="pSiteSwabValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
+        </div>
+        <div onclick="showFocusedView('pSelfSwab')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
+          <h3 class="text-xl font-semibold mb-4 text-violet-600 dark:text-violet-400">^[0-9A-HJ-NP-TV-Z]{7}$</h3>
+          <div class="w-full h-28 flex items-center justify-center"><svg id="pSelfSwabBarcode"></svg></div>
+          <p id="pSelfSwabValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
       </div>
     </section>

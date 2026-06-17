@@ -32,7 +32,10 @@ function generateRandomNumeric(length) {
 
 const BarcodeEngines = {
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
-  DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/) // internal regex has a * instead of {6} but that's too much
+  DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/), // internal regex has a * instead of {6} but that's too much
+  pScanned: new RandExp(/^[0-9A-HJ-NP-TV-Z]{6}$/), // internal regex has a + instead of {6}
+  pSiteSwab: new RandExp(/^[0-9A-HJ-NP-TV-Z]{6}$/),
+  pSelfSwab: new RandExp(/^[0-9A-HJ-NP-TV-Z]{7}$/)
 };
 
 function generateStringFromEngine(symbologyKey) {
@@ -49,7 +52,7 @@ function generateStringFromEngine(symbologyKey) {
 // --- Barcode Generation Logic ---
 function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
 function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
-function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
+// function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
 function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGTH); }
 
 // --- AWB GENERATORS ---
@@ -60,8 +63,11 @@ function generateMarkenTracking() { return generateStringFromEngine('Marken'); }
 function generateWorldCourierTracking() { return generateRandomNumeric(9); }
 function generateQuickstatTracking() { return generateRandomNumeric(9) + 'W'; }
 
-// --- LAB SPECIFIC GENERATORS (Added MLM) ---
+// --- SPECIFIC GENERATORS ---
 function generateMLMBarcode() { return generateRandomNumeric(12); }
+function generatepScanned() { return generateStringFromEngine('pScanned'); }
+function generatepSiteSwab() { return generateStringFromEngine('pSiteSwab'); }
+function generatepSelfSwab() { return generateStringFromEngine('pSelfSwab'); }
 
 
 // --- Rendering Functions ---
@@ -72,7 +78,7 @@ function render1DBarcode(elementId, value, options = {}) {
     lineColor: document.body.classList.contains('dark') ? "#FFFFFF" : "#000000",
     width: 2, height: 80, displayValue: false
   };
-  JsBarcode(el, value, { ...defaultOptions, ...options });
+  JsBarcode(el, value, { ...defaultOptions, ...options }); // ALSO HERE
 }
 
 function render2DCode(elementId, value, type, options = {}) {
@@ -114,9 +120,9 @@ function generateCustomBarcode() {
   } else if (type === 'CODE39-MOD43') {
     svgEl.classList.remove('hidden');
     render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-  } else if (type === 'CODE93') {
-    canvasEl.classList.remove('hidden');
-    render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
+  // } else if (type === 'CODE93') {
+  //   canvasEl.classList.remove('hidden');
+  //   render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
   } else {
     svgEl.classList.remove('hidden');
     render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
@@ -146,9 +152,9 @@ function updateAllBarcodes() {
   document.getElementById('code128Value').textContent = code128Val;
   render1DBarcode('code128Barcode', code128Val, { format: "CODE128" });
 
-  const code93Val = generateCode93Value();
-  document.getElementById('code93Value').textContent = code93Val;
-  render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
+  // const code93Val = generateCode93Value();
+  // document.getElementById('code93Value').textContent = code93Val;
+  // render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
 
   const qrVal = generate2DCodeValue();
   document.getElementById('qrCodeValue').textContent = qrVal;
@@ -183,10 +189,23 @@ function updateAllBarcodes() {
   document.getElementById('quickstatValue').textContent = quickstatVal;
   render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
 
-  // Lab Specific (MLM Added Here)
+  // Specific
   const mlmVal = generateMLMBarcode();
   document.getElementById('mlmValue').textContent = mlmVal;
   render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
+
+  const pScannedVal = generatepScanned();
+  document.getElementById('pScannedValue').textContent = pScannedVal; 
+  render1DBarcode('pScannedBarcode', pScannedVal, { format: "CODE39", mod43: true }); // HERE
+
+  const pSiteSwabVal = generatepSiteSwab();
+  document.getElementById('pSiteSwabValue').textContent = pSiteSwabVal;
+  render1DBarcode('pSiteSwabBarcode', pSiteSwabVal, { format: "CODE39", mod43: true });
+
+  const pSelfSwabVal = generatepSelfSwab();
+  document.getElementById('pSelfSwabValue').textContent = pSelfSwabVal;
+  render1DBarcode('pSelfSwabBarcode', pSelfSwabVal, { format: "CODE39", mod43: true });
+
 }
 
 // --- Focused View Logic ---
@@ -224,9 +243,9 @@ function showFocusedCustom() {
   } else if (type === 'CODE39-MOD43') {
     svgEl.classList.remove('hidden');
     render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
-  } else if (type === 'CODE93') {
-    canvasEl.classList.remove('hidden');
-    render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
+  // } else if (type === 'CODE93') {
+  //   canvasEl.classList.remove('hidden');
+  //   render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
   } else {
     svgEl.classList.remove('hidden');
     render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
@@ -254,9 +273,9 @@ function showFocusedView(barcodeType) {
     case 'code128':
       title = 'Code128'; generatorFn = generateCode128Value;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'code93':
-      title = 'Code93'; generatorFn = generateCode93Value;
-      is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
+    // case 'code93':
+    //   title = 'Code93'; generatorFn = generateCode93Value;
+    //   is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
     case 'qr':
       title = 'QR Code'; generatorFn = generate2DCodeValue;
       is2D = true; renderOptions = { bcid: 'qrcode', scale: 5, width: 20, height: 20 }; break;
@@ -282,8 +301,18 @@ function showFocusedView(barcodeType) {
       title = 'Quickstat'; generatorFn = generateQuickstatTracking;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
     case 'mlm':
-      title = 'MLM'; generatorFn = generateMLMBarcode;
+      title = '^\\d{12}$'; generatorFn = generateMLMBarcode;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
+    case 'pScanned':
+      console.log("case pScanned");
+      title = '^[0-9A-HJ-NP-TV-Z]+$'; generatorFn = generatepScanned;
+      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
+    case 'pSiteSwab':
+      title = '^[0-9A-HJ-NP-TV-Z]{6}$'; generatorFn = generatepSiteSwab;
+      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
+    case 'pSelfSwab':
+      title = '^[0-9A-HJ-NP-TV-Z]{7}$'; generatorFn = generatepSelfSwab;
+      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
   }
 
   document.getElementById('focusedTitle').textContent = title;
