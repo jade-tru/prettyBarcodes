@@ -30,6 +30,7 @@ function generateRandomNumeric(length) {
   return generateRandomString(length, '0123456789');
 }
 
+// --- String Generation ---
 const BarcodeEngines = {
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
   DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/), // internal regex has a * instead of {6} but that's too much
@@ -49,7 +50,7 @@ function generateStringFromEngine(symbologyKey) {
   return engine.gen();
 }
 
-// --- Barcode Generation Logic ---
+// --- Generic Barcode Generation Logic ---
 function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
 function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
 // function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
@@ -85,10 +86,34 @@ function render2DCode(elementId, value, type, options = {}) {
   const canvas = document.getElementById(elementId);
   if (!canvas) return;
   const defaultOptions = {
-    bcid: type, text: value, scale: 3,
-    height: 10, width: 10, includetext: false,
+    bcid: type,
+    text: value,
+    scale: 3,
+    height: 10,
+    width: 10,
+    includetext: false,
   };
   bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
+}
+
+function renderBarcode(elementId, value, type, options = {}) {
+  const canvas = document.getElementById(elementId);
+  if (!canvas) return;
+
+  const defaultOptions = {
+    bcid: type,           // The barcode type (e.g., 'code128', 'qrcode')
+    text: value,          // The data to encode
+    scale: 3,             // Overall scaling factor
+    height: 10,           // Bar height (mostly affects 1D barcodes)
+    width: 10,
+    includetext: false    // Hide human-readable text by default
+  };
+
+  try {
+    bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
+  } catch (err) {
+    console.error(`Error rendering barcode ${type}:`, err);
+  }
 }
 
 // --- Custom Barcode Generator ---
@@ -116,13 +141,13 @@ function generateCustomBarcode() {
     valueDisplay.textContent = data;
   if (type === 'qrcode' || type === 'datamatrix') {
     canvasEl.classList.remove('hidden');
-    render2DCode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
+    renderBarcode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
   } else if (type === 'CODE39-MOD43') {
     svgEl.classList.remove('hidden');
     render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
   // } else if (type === 'CODE93') {
   //   canvasEl.classList.remove('hidden');
-  //   render2DCode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
+  //   renderBarcode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
   } else {
     svgEl.classList.remove('hidden');
     render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
@@ -154,15 +179,15 @@ function updateAllBarcodes() {
 
   // const code93Val = generateCode93Value();
   // document.getElementById('code93Value').textContent = code93Val;
-  // render2DCode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
+  // renderBarcode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
 
   const qrVal = generate2DCodeValue();
   document.getElementById('qrCodeValue').textContent = qrVal;
-  render2DCode('qrCode', qrVal, 'qrcode');
+  renderBarcode('qrCode', qrVal, 'qrcode');
 
   const dmVal = generate2DCodeValue();
   document.getElementById('dataMatrixValue').textContent = dmVal;
-  render2DCode('dataMatrixCode', dmVal, 'datamatrix');
+  renderBarcode('dataMatrixCode', dmVal, 'datamatrix');
 
   // Shipment Labels
   const upsVal = generateUPSTracking();
@@ -239,13 +264,13 @@ function showFocusedCustom() {
 
   if (is2D) {
     canvasEl.classList.remove('hidden');
-    render2DCode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
+    renderBarcode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
   } else if (type === 'CODE39-MOD43') {
     svgEl.classList.remove('hidden');
     render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
   // } else if (type === 'CODE93') {
   //   canvasEl.classList.remove('hidden');
-  //   render2DCode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
+  //   renderBarcode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
   } else {
     svgEl.classList.remove('hidden');
     render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
@@ -324,7 +349,7 @@ function showFocusedView(barcodeType) {
     const newValue = generatorFn();
     document.getElementById('focusedValue').textContent = newValue;
     if (is2D) {
-      render2DCode('focusedBarcodeCanvas', newValue, renderOptions.bcid, renderOptions);
+      renderBarcode('focusedBarcodeCanvas', newValue, renderOptions.bcid, renderOptions);
     } else {
       render1DBarcode('focusedBarcodeSvg', newValue, renderOptions);
     }
