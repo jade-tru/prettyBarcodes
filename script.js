@@ -34,9 +34,9 @@ function generateRandomNumeric(length) {
 const BarcodeEngines = {
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
   DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/), // internal regex has a * instead of {6} but that's too much
-  pScanned: new RandExp(/^[0-9A-HJ-NP-TV-Z]{6}$/), // internal regex has a + instead of {6}
-  pSiteSwab: new RandExp(/^[0-9A-HJ-NP-TV-Z]{6}$/),
-  pSelfSwab: new RandExp(/^[0-9A-HJ-NP-TV-Z]{7}$/)
+  pScanned: new RandExp(/^[0-9A-HJ-NPR-TV-Z]{6}$/), // internal regex has a + instead of {6}
+  pSiteSwab: new RandExp(/^[0-9A-HJ-NPR-TV-Z]{6}$/),
+  pSelfSwab: new RandExp(/^[0-9A-HJ-NPR-TV-Z]{7}$/)
 };
 
 function generateStringFromEngine(symbologyKey) {
@@ -329,14 +329,13 @@ function showFocusedView(barcodeType) {
       title = '^\\d{12}$'; generatorFn = generateMLMBarcode;
       renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
     case 'pScanned':
-      console.log("case pScanned");
-      title = '^[0-9A-HJ-NP-TV-Z]+$'; generatorFn = generatepScanned;
+      title = '^[0-9A-HJ-NPR-TV-Z]+$'; generatorFn = generatepScanned;
       renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
     case 'pSiteSwab':
-      title = '^[0-9A-HJ-NP-TV-Z]{6}$'; generatorFn = generatepSiteSwab;
+      title = '^[0-9A-HJ-NPR-TV-Z]{6}$'; generatorFn = generatepSiteSwab;
       renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
     case 'pSelfSwab':
-      title = '^[0-9A-HJ-NP-TV-Z]{7}$'; generatorFn = generatepSelfSwab;
+      title = '^[0-9A-HJ-NPR-TV-Z]{7}$'; generatorFn = generatepSelfSwab;
       renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
   }
 
