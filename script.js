@@ -167,12 +167,10 @@ function updateAllBarcodes() {
   // Symbologies
   const code39Val = generateCode39Value();
   document.getElementById('code39Value').textContent = code39Val;
-  // render1DBarcode('code39Barcode', code39Val, { format: "CODE39" });
   renderBarcode('code39Barcode', code39Val, 'code39');
 
   const code39CheckDigitVal = generateCode39Value();
   document.getElementById('code39CheckDigitValue').textContent = code39CheckDigitVal;
-  // render1DBarcode('code39CheckDigitBarcode', code39CheckDigitVal, { format: "CODE39", mod43: true });
   renderBarcode('code39CheckDigitBarcode', code39CheckDigitVal, 'code39', { includecheck: true});
 
   const code128Val = generateCode128Value();
@@ -194,53 +192,43 @@ function updateAllBarcodes() {
   // Shipment Labels
   const upsVal = generateUPSTracking();
   document.getElementById('upsValue').textContent = upsVal;
-  // render1DBarcode('upsBarcode', upsVal, { format: "CODE128" });
   renderBarcode('upsBarcode', upsVal, 'code128');
 
   const fedexVal = generateFedExTracking();
   document.getElementById('fedexValue').textContent = fedexVal;
-  // render1DBarcode('fedexBarcode', fedexVal, { format: "CODE128" });
   renderBarcode('fedexBarcode', fedexVal, 'code128');
 
   const dhlVal = generateDHLTracking();
   document.getElementById('dhlValue').textContent = dhlVal;
-  // render1DBarcode('dhlBarcode', dhlVal, { format: "CODE128" });
   renderBarcode('dhlBarcode', dhlVal, 'code128');
 
   const markenVal = generateMarkenTracking();
   document.getElementById('markenValue').textContent = markenVal;
-  // render1DBarcode('markenBarcode', markenVal, { format: "CODE128" });
   renderBarcode('markenBarcode', markenVal, 'code128');
   
   const wcVal = generateWorldCourierTracking();
   document.getElementById('worldCourierValue').textContent = wcVal;
-  // render1DBarcode('worldCourierBarcode', wcVal, { format: "CODE128" });
   renderBarcode('worldCourierBarcode', wcVal, 'code128');
 
   const quickstatVal = generateQuickstatTracking();
   document.getElementById('quickstatValue').textContent = quickstatVal;
-  // render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
   renderBarcode('quickstatBarcode', quickstatVal, 'code128');
 
   // Specific
   const mlmVal = generateMLMBarcode();
   document.getElementById('mlmValue').textContent = mlmVal;
-  // render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
   renderBarcode('mlmBarcode', mlmVal, 'code128');
 
   const pScannedVal = generatepScanned();
   document.getElementById('pScannedValue').textContent = pScannedVal; 
-  // render1DBarcode('pScannedBarcode', pScannedVal, { format: "CODE39", mod43: true });
   renderBarcode('pScannedBarcode', pScannedVal, 'code39', { includecheck: true});
 
   const pSiteSwabVal = generatepSiteSwab();
   document.getElementById('pSiteSwabValue').textContent = pSiteSwabVal;
-  // render1DBarcode('pSiteSwabBarcode', pSiteSwabVal, { format: "CODE39", mod43: true });
   renderBarcode('pSiteSwabBarcode', pSiteSwabVal, 'code39', { includecheck: true});
 
   const pSelfSwabVal = generatepSelfSwab();
   document.getElementById('pSelfSwabValue').textContent = pSelfSwabVal;
-  // render1DBarcode('pSelfSwabBarcode', pSelfSwabVal, { format: "CODE39", mod43: true });
   renderBarcode('pSelfSwabBarcode', pSelfSwabVal, 'code39', { includecheck: true});
 
 }
@@ -349,85 +337,6 @@ function showFocusedView(barcodeKey) {
   window.focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
 }
 
-function OLDshowFocusedView(barcodeType) {
-  document.getElementById('mainGrid').classList.add('hidden');
-  const focusedView = document.getElementById('focusedView');
-  focusedView.classList.remove('hidden');
-  focusedView.classList.add('flex');
-  
-  // const svgEl = document.getElementById('focusedBarcodeSvg');
-  const canvasEl = document.getElementById('focusedBarcodeCanvas');
-
-  let generatorFn, title, is2D = false, renderOptions;
-
-  switch (barcodeType) {
-    case 'code39':
-      title = 'Code39'; generatorFn = generateCode39Value;
-      renderOptions = { format: "CODE39", height: 150, width: 4 }; break;
-    case 'code39check':
-      title = 'Code39 (Check Digit)'; generatorFn = generateCode39Value;
-      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
-    case 'code128':
-      title = 'Code128'; generatorFn = generateCode128Value;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    // case 'code93':
-    //   title = 'Code93'; generatorFn = generateCode93Value;
-    //   is2D = true; renderOptions = { bcid: 'code93', scale: 4, height: 15, width: 50 }; break;
-    case 'qr':
-      title = 'QR Code'; generatorFn = generate2DCodeValue;
-      is2D = true; renderOptions = { bcid: 'qrcode', scale: 5, width: 20, height: 20 }; break;
-    case 'datamatrix':
-      title = 'Data Matrix'; generatorFn = generate2DCodeValue;
-      is2D = true; renderOptions = { bcid: 'datamatrix', scale: 5, width: 20, height: 20 }; break;
-    case 'ups':
-      title = 'UPS Tracking'; generatorFn = generateUPSTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'fedex':
-      title = 'FedEx Tracking'; generatorFn = generateFedExTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'dhl':
-      title = 'DHL Tracking'; generatorFn = generateDHLTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'marken':
-      title = 'Marken Tracking'; generatorFn = generateMarkenTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'worldcourier':
-      title = 'World Courier'; generatorFn = generateWorldCourierTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'quickstat':
-      title = 'Quickstat'; generatorFn = generateQuickstatTracking;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'mlm':
-      title = '^\\d{12}$'; generatorFn = generateMLMBarcode;
-      renderOptions = { format: "CODE128", height: 150, width: 4 }; break;
-    case 'pScanned':
-      title = '^[0-9A-HJ-NPR-TV-Z]+$'; generatorFn = generatepScanned;
-      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
-    case 'pSiteSwab':
-      title = '^[0-9A-HJ-NPR-TV-Z]{6}$'; generatorFn = generatepSiteSwab;
-      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
-    case 'pSelfSwab':
-      title = '^[0-9A-HJ-NPR-TV-Z]{7}$'; generatorFn = generatepSelfSwab;
-      renderOptions = { format: "CODE39", mod43: true, height: 150, width: 4 }; break;
-  }
-
-  document.getElementById('focusedTitle').textContent = title;
-  // svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-  // is2D ? canvasEl.classList.remove('hidden') : svgEl.classList.remove('hidden');
-
-  const updateFocused = () => {
-    const newValue = generatorFn();
-    document.getElementById('focusedValue').textContent = newValue;
-    if (is2D) {
-      renderBarcode('focusedBarcodeCanvas', newValue, renderOptions.bcid, renderOptions);
-    } else {
-      render1DBarcode('focusedBarcodeSvg', newValue, renderOptions);
-    }
-  };
-  updateFocused();
-  focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
-}
 
 function hideFocusedView() {
   document.getElementById('focusedView').classList.add('hidden');
