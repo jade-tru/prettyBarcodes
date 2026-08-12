@@ -82,20 +82,6 @@ function render1DBarcode(elementId, value, options = {}) {
   JsBarcode(el, value, { ...defaultOptions, ...options }); // ALSO HERE
 }
 
-// function render2DCode(elementId, value, type, options = {}) {
-//   const canvas = document.getElementById(elementId);
-//   if (!canvas) return;
-//   const defaultOptions = {
-//     bcid: type,
-//     text: value,
-//     scale: 3,
-//     height: 10,
-//     width: 10,
-//     includetext: false,
-//   };
-//   bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
-// }
-
 function renderBarcode(elementId, value, type, options = {}) {
   const canvas = document.getElementById(elementId);
   if (!canvas) return;
@@ -113,51 +99,6 @@ function renderBarcode(elementId, value, type, options = {}) {
     bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
   } catch (err) {
     console.error(`Error rendering barcode ${type}:`, err);
-  }
-}
-
-// --- Custom Barcode Generator ---
-function generateCustomBarcode() {
-  const type = document.getElementById('customType').value;
-  const data = document.getElementById('customData').value;
-  
-  const svgEl = document.getElementById('customBarcodeSvg');
-  const canvasEl = document.getElementById('customBarcodeCanvas');
-  const valueDisplay = document.getElementById('customValueDisplay');
-  const errorDisplay = document.getElementById('customErrorDisplay');
-
-  // Reset UI
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-  valueDisplay.textContent = '';
-  errorDisplay.textContent = '';
-
-  if (!data.trim()) {
-    errorDisplay.textContent = 'Please enter data for the barcode.';
-    return;
-  }
-
-  try {
-    valueDisplay.textContent = data;
-  if (type === 'qrcode' || type === 'datamatrix') {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
-  }
-  } catch (e) {
-    console.error("Barcode Generation Error:", e);
-    valueDisplay.textContent = '';
-    errorDisplay.textContent = e.message.includes('Invalid') 
-      ? `Invalid characters for ${type}.`
-      : 'Could not generate barcode.';
   }
 }
 
@@ -234,49 +175,6 @@ function updateAllBarcodes() {
 }
 
 // --- Focused View Logic ---
-function showFocusedCustom() {
-  const data = document.getElementById('customValueDisplay').textContent;
-  if (!data) return; // Don't open modal if no barcode is generated
-
-  const type = document.getElementById('customType').value;
-  const is2D = type === 'qrcode' || type === 'datamatrix';
-  
-  document.getElementById('mainGrid').classList.add('hidden');
-  const focusedView = document.getElementById('focusedView');
-  focusedView.classList.remove('hidden');
-  focusedView.classList.add('flex');
-
-  if (focusedIntervalId) {
-    clearInterval(focusedIntervalId);
-    focusedIntervalId = null;
-  }
-
-  const svgEl = document.getElementById('focusedBarcodeSvg');
-  const canvasEl = document.getElementById('focusedBarcodeCanvas');
-  
-  const typeSelect = document.getElementById('customType');
-  const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
-  document.getElementById('focusedTitle').textContent = selectedOptionText;
-  document.getElementById('focusedValue').textContent = data;
-
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-
-  if (is2D) {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
-  }
-}
-
 const barcodeConfigs = {
   'code39':       { title: 'Code39', type: 'code39', generatorFn: generateCode39Value },
   'code39check':  { title: 'Code39 (Check Digit)', type: 'code39', generatorFn: generateCode39Value, options: { includecheck: true } },
@@ -352,9 +250,154 @@ function hideFocusedView() {
   }
 }
 
+// --- Custom Barcode Generator ---
+let currentCustomMode = 'regex'; // 'regex' or 'custom'
+
+const btnRegex = document.getElementById('btnRegex');
+const btnCustomData = document.getElementById('btnCustomData');
+const inputLabel = document.getElementById('inputLabel');
+const customDataInput = document.getElementById('customData');
+const generateLotBtn = document.getElementById('generateLotBtn'); // <-- NEW
+
+// Define the active and inactive classes
+const activeClasses = ['bg-indigo-600', 'text-white', 'shadow-inner'];
+const inactiveClasses = ['bg-gray-100', 'text-gray-600', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600'];
+
+function setMode(mode) {
+  currentCustomMode = mode;
+  
+  if (mode === 'regex') {
+    // Style Regex button as active
+    btnRegex.classList.remove(...inactiveClasses);
+    btnRegex.classList.add(...activeClasses);
+    
+    // Style Custom Data button as inactive
+    btnCustomData.classList.remove(...activeClasses);
+    btnCustomData.classList.add(...inactiveClasses);
+    
+    // Update input UI
+    inputLabel.textContent = "Regex Pattern";
+    customDataInput.placeholder = "e.g., ^[A-Z]{3}\\d{4}$";
+    customDataInput.value = ""; 
+    
+    // Enable "Generate A Lot" <-- NEW
+    generateLotBtn.disabled = false;
+    
+  } else {
+    // Style Custom Data button as active
+    btnCustomData.classList.remove(...inactiveClasses);
+    btnCustomData.classList.add(...activeClasses);
+    
+    // Style Regex button as inactive
+    btnRegex.classList.remove(...activeClasses);
+    btnRegex.classList.add(...inactiveClasses);
+    
+    // Update input UI
+    inputLabel.textContent = "Data";
+    customDataInput.placeholder = "Enter barcode data here";
+    customDataInput.value = ""; 
+    
+    // Disable "Generate A Lot" <-- NEW
+    generateLotBtn.disabled = true;
+  }
+}
+
+// Attach event listeners
+btnRegex.addEventListener('click', () => setMode('regex'));
+btnCustomData.addEventListener('click', () => setMode('custom'));
+
+
+function generateCustomBarcode() {
+  const type = document.getElementById('customType').value;
+  const data = document.getElementById('customData').value;
+  
+  const svgEl = document.getElementById('customBarcodeSvg');
+  const canvasEl = document.getElementById('customBarcodeCanvas');
+  const valueDisplay = document.getElementById('customValueDisplay');
+  const errorDisplay = document.getElementById('customErrorDisplay');
+
+  // Reset UI
+  svgEl.classList.add('hidden');
+  canvasEl.classList.add('hidden');
+  valueDisplay.textContent = '';
+  errorDisplay.textContent = '';
+
+  if (!data.trim()) {
+    errorDisplay.textContent = 'Please enter data for the barcode.';
+    return;
+  }
+
+  try {
+    valueDisplay.textContent = data;
+  if (type === 'qrcode' || type === 'datamatrix') {
+    canvasEl.classList.remove('hidden');
+    renderBarcode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
+  } else if (type === 'CODE39-MOD43') {
+    svgEl.classList.remove('hidden');
+    render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
+  // } else if (type === 'CODE93') {
+  //   canvasEl.classList.remove('hidden');
+  //   renderBarcode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
+  } else {
+    svgEl.classList.remove('hidden');
+    render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
+  }
+  } catch (e) {
+    console.error("Barcode Generation Error:", e);
+    valueDisplay.textContent = '';
+    errorDisplay.textContent = e.message.includes('Invalid') 
+      ? `Invalid characters for ${type}.`
+      : 'Could not generate barcode.';
+  }
+}
+
+function showFocusedCustom() {
+  const data = document.getElementById('customValueDisplay').textContent;
+  if (!data) return; // Don't open modal if no barcode is generated
+
+  const type = document.getElementById('customType').value;
+  const is2D = type === 'qrcode' || type === 'datamatrix';
+  
+  document.getElementById('mainGrid').classList.add('hidden');
+  const focusedView = document.getElementById('focusedView');
+  focusedView.classList.remove('hidden');
+  focusedView.classList.add('flex');
+
+  if (focusedIntervalId) {
+    clearInterval(focusedIntervalId);
+    focusedIntervalId = null;
+  }
+
+  // const svgEl = document.getElementById('focusedBarcodeSvg');
+  const canvasEl = document.getElementById('focusedBarcodeCanvas');
+  
+  const typeSelect = document.getElementById('customType');
+  const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
+  document.getElementById('focusedTitle').textContent = selectedOptionText;
+  document.getElementById('focusedValue').textContent = data;
+
+  svgEl.classList.add('hidden');
+  canvasEl.classList.add('hidden');
+
+  if (is2D) {
+    canvasEl.classList.remove('hidden');
+    renderBarcode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
+  } else if (type === 'CODE39-MOD43') {
+    svgEl.classList.remove('hidden');
+    render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
+  // } else if (type === 'CODE93') {
+  //   canvasEl.classList.remove('hidden');
+  //   renderBarcode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
+  } else {
+    svgEl.classList.remove('hidden');
+    render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
+  }
+}
+
+
 // --- Initial Load and Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
   updateAllBarcodes();
   setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
-  document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
+  // document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
 });
