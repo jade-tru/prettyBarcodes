@@ -289,13 +289,73 @@ function showFocusedCustom() {
   }
 }
 
-function showFocusedView(barcodeType) {
+const barcodeConfigs = {
+  'code39':       { title: 'Code39', type: 'code39', generatorFn: generateCode39Value },
+  'code39check':  { title: 'Code39 (Check Digit)', type: 'code39', generatorFn: generateCode39Value, options: { includecheck: true } },
+  'code128':      { title: 'Code128', type: 'code128', generatorFn: generateCode128Value },
+  'qr':           { title: 'QR Code', type: 'qrcode', generatorFn: generate2DCodeValue, is2D: true },
+  'datamatrix':   { title: 'Data Matrix', type: 'datamatrix', generatorFn: generate2DCodeValue, is2D: true },
+  
+  'ups':          { title: 'UPS Tracking', type: 'code128', generatorFn: generateUPSTracking },
+  'fedex':        { title: 'FedEx Tracking', type: 'code128', generatorFn: generateFedExTracking },
+  'dhl':          { title: 'DHL Tracking', type: 'code128', generatorFn: generateDHLTracking },
+  'marken':       { title: 'Marken Tracking', type: 'code128', generatorFn: generateMarkenTracking },
+  'worldcourier': { title: 'World Courier', type: 'code128', generatorFn: generateWorldCourierTracking },
+  'quickstat':    { title: 'Quickstat', type: 'code128', generatorFn: generateQuickstatTracking },
+  'mlm':          { title: '^\\d{12}$', type: 'code128', generatorFn: generateMLMBarcode },
+  
+  'pScanned':     { title: '^[0-9A-HJ-NPR-TV-Z]+$', type: 'code39', generatorFn: generatepScanned, options: { includecheck: true } },
+  'pSiteSwab':    { title: '^[0-9A-HJ-NPR-TV-Z]{6}$', type: 'code39', generatorFn: generatepSiteSwab, options: { includecheck: true } },
+  'pSelfSwab':    { title: '^[0-9A-HJ-NPR-TV-Z]{7}$', type: 'code39', generatorFn: generatepSelfSwab, options: { includecheck: true } }
+};
+
+function showFocusedView(barcodeKey) {
   document.getElementById('mainGrid').classList.add('hidden');
   const focusedView = document.getElementById('focusedView');
   focusedView.classList.remove('hidden');
   focusedView.classList.add('flex');
   
-  const svgEl = document.getElementById('focusedBarcodeSvg');
+  const canvasEl = document.getElementById('focusedBarcodeCanvas');
+  canvasEl.classList.remove('hidden'); // Ensure canvas is visible
+
+  // Look up the configuration based on what the user clicked
+  const config = barcodeConfigs[barcodeKey];
+  if (!config) return; // Safety check in case of a bad key
+
+  document.getElementById('focusedTitle').textContent = config.title;
+
+  // Set default sizes based on 1D vs 2D
+  // bwip-js ignores height for 2D codes, so we only pass scale for 2D
+  const baseOptions = config.is2D 
+    ? { scale: 8, height: 8, width: 8 } 
+    : { scale: 4, height: 15, width: 60 };
+
+  // Merge the base sizing with any specific options (like includecheck)
+  const finalOptions = { ...baseOptions, ...(config.options || {}) };
+
+  const updateFocused = () => {
+    const newValue = config.generatorFn();
+    document.getElementById('focusedValue').textContent = newValue;
+    
+    // Use the unified function
+    renderBarcode('focusedBarcodeCanvas', newValue, config.type, finalOptions);
+  };
+
+  // Run immediately, then start the interval
+  updateFocused();
+  
+  // Good practice: clear the interval if one is already running before starting a new one
+  if (window.focusedIntervalId) clearInterval(window.focusedIntervalId);
+  window.focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+}
+
+function OLDshowFocusedView(barcodeType) {
+  document.getElementById('mainGrid').classList.add('hidden');
+  const focusedView = document.getElementById('focusedView');
+  focusedView.classList.remove('hidden');
+  focusedView.classList.add('flex');
+  
+  // const svgEl = document.getElementById('focusedBarcodeSvg');
   const canvasEl = document.getElementById('focusedBarcodeCanvas');
 
   let generatorFn, title, is2D = false, renderOptions;
@@ -352,9 +412,9 @@ function showFocusedView(barcodeType) {
   }
 
   document.getElementById('focusedTitle').textContent = title;
-  svgEl.classList.add('hidden');
+  // svgEl.classList.add('hidden');
   canvasEl.classList.add('hidden');
-  is2D ? canvasEl.classList.remove('hidden') : svgEl.classList.remove('hidden');
+  // is2D ? canvasEl.classList.remove('hidden') : svgEl.classList.remove('hidden');
 
   const updateFocused = () => {
     const newValue = generatorFn();
@@ -375,7 +435,6 @@ function hideFocusedView() {
   document.getElementById('mainGrid').classList.remove('hidden');
   
   // Explicitly hide these for cleanliness
-  document.getElementById('focusedBarcodeSvg').classList.add('hidden');
   document.getElementById('focusedBarcodeCanvas').classList.add('hidden');
 
   if (focusedIntervalId) {
