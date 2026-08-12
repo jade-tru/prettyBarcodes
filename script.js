@@ -82,19 +82,19 @@ function render1DBarcode(elementId, value, options = {}) {
   JsBarcode(el, value, { ...defaultOptions, ...options }); // ALSO HERE
 }
 
-function render2DCode(elementId, value, type, options = {}) {
-  const canvas = document.getElementById(elementId);
-  if (!canvas) return;
-  const defaultOptions = {
-    bcid: type,
-    text: value,
-    scale: 3,
-    height: 10,
-    width: 10,
-    includetext: false,
-  };
-  bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
-}
+// function render2DCode(elementId, value, type, options = {}) {
+//   const canvas = document.getElementById(elementId);
+//   if (!canvas) return;
+//   const defaultOptions = {
+//     bcid: type,
+//     text: value,
+//     scale: 3,
+//     height: 10,
+//     width: 10,
+//     includetext: false,
+//   };
+//   bwipjs.toCanvas(canvas, { ...defaultOptions, ...options });
+// }
 
 function renderBarcode(elementId, value, type, options = {}) {
   const canvas = document.getElementById(elementId);
@@ -104,7 +104,7 @@ function renderBarcode(elementId, value, type, options = {}) {
     bcid: type,           // The barcode type (e.g., 'code128', 'qrcode')
     text: value,          // The data to encode
     scale: 3,             // Overall scaling factor
-    height: 10,           // Bar height (mostly affects 1D barcodes)
+    height: 5,           // Bar height (mostly affects 1D barcodes)
     width: 10,
     includetext: false    // Hide human-readable text by default
   };
@@ -167,15 +167,17 @@ function updateAllBarcodes() {
   // Symbologies
   const code39Val = generateCode39Value();
   document.getElementById('code39Value').textContent = code39Val;
-  render1DBarcode('code39Barcode', code39Val, { format: "CODE39" });
+  // render1DBarcode('code39Barcode', code39Val, { format: "CODE39" });
+  renderBarcode('code39Barcode', code39Val, 'code39');
 
   const code39CheckDigitVal = generateCode39Value();
   document.getElementById('code39CheckDigitValue').textContent = code39CheckDigitVal;
-  render1DBarcode('code39CheckDigitBarcode', code39CheckDigitVal, { format: "CODE39", mod43: true });
+  // render1DBarcode('code39CheckDigitBarcode', code39CheckDigitVal, { format: "CODE39", mod43: true });
+  renderBarcode('code39CheckDigitBarcode', code39CheckDigitVal, 'code39', { includecheck: true});
 
   const code128Val = generateCode128Value();
   document.getElementById('code128Value').textContent = code128Val;
-  render1DBarcode('code128Barcode', code128Val, { format: "CODE128" });
+  renderBarcode('code128Barcode', code128Val, 'code128');
 
   // const code93Val = generateCode93Value();
   // document.getElementById('code93Value').textContent = code93Val;
@@ -183,53 +185,63 @@ function updateAllBarcodes() {
 
   const qrVal = generate2DCodeValue();
   document.getElementById('qrCodeValue').textContent = qrVal;
-  renderBarcode('qrCode', qrVal, 'qrcode');
+  renderBarcode('qrCode', qrVal, 'qrcode', {height: 10});
 
   const dmVal = generate2DCodeValue();
   document.getElementById('dataMatrixValue').textContent = dmVal;
-  renderBarcode('dataMatrixCode', dmVal, 'datamatrix');
+  renderBarcode('dataMatrixCode', dmVal, 'datamatrix', {height: 10});
 
   // Shipment Labels
   const upsVal = generateUPSTracking();
   document.getElementById('upsValue').textContent = upsVal;
-  render1DBarcode('upsBarcode', upsVal, { format: "CODE128" });
+  // render1DBarcode('upsBarcode', upsVal, { format: "CODE128" });
+  renderBarcode('upsBarcode', upsVal, 'code128');
 
   const fedexVal = generateFedExTracking();
   document.getElementById('fedexValue').textContent = fedexVal;
-  render1DBarcode('fedexBarcode', fedexVal, { format: "CODE128" });
+  // render1DBarcode('fedexBarcode', fedexVal, { format: "CODE128" });
+  renderBarcode('fedexBarcode', fedexVal, 'code128');
 
   const dhlVal = generateDHLTracking();
   document.getElementById('dhlValue').textContent = dhlVal;
-  render1DBarcode('dhlBarcode', dhlVal, { format: "CODE128" });
+  // render1DBarcode('dhlBarcode', dhlVal, { format: "CODE128" });
+  renderBarcode('dhlBarcode', dhlVal, 'code128');
 
   const markenVal = generateMarkenTracking();
   document.getElementById('markenValue').textContent = markenVal;
-  render1DBarcode('markenBarcode', markenVal, { format: "CODE128" });
+  // render1DBarcode('markenBarcode', markenVal, { format: "CODE128" });
+  renderBarcode('markenBarcode', markenVal, 'code128');
   
   const wcVal = generateWorldCourierTracking();
   document.getElementById('worldCourierValue').textContent = wcVal;
-  render1DBarcode('worldCourierBarcode', wcVal, { format: "CODE128" });
+  // render1DBarcode('worldCourierBarcode', wcVal, { format: "CODE128" });
+  renderBarcode('worldCourierBarcode', wcVal, 'code128');
 
   const quickstatVal = generateQuickstatTracking();
   document.getElementById('quickstatValue').textContent = quickstatVal;
-  render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
+  // render1DBarcode('quickstatBarcode', quickstatVal, { format: "CODE128" });
+  renderBarcode('quickstatBarcode', quickstatVal, 'code128');
 
   // Specific
   const mlmVal = generateMLMBarcode();
   document.getElementById('mlmValue').textContent = mlmVal;
-  render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
+  // render1DBarcode('mlmBarcode', mlmVal, { format: "CODE128" });
+  renderBarcode('mlmBarcode', mlmVal, 'code128');
 
   const pScannedVal = generatepScanned();
   document.getElementById('pScannedValue').textContent = pScannedVal; 
-  render1DBarcode('pScannedBarcode', pScannedVal, { format: "CODE39", mod43: true }); // HERE
+  // render1DBarcode('pScannedBarcode', pScannedVal, { format: "CODE39", mod43: true });
+  renderBarcode('pScannedBarcode', pScannedVal, 'code39', { includecheck: true});
 
   const pSiteSwabVal = generatepSiteSwab();
   document.getElementById('pSiteSwabValue').textContent = pSiteSwabVal;
-  render1DBarcode('pSiteSwabBarcode', pSiteSwabVal, { format: "CODE39", mod43: true });
+  // render1DBarcode('pSiteSwabBarcode', pSiteSwabVal, { format: "CODE39", mod43: true });
+  renderBarcode('pSiteSwabBarcode', pSiteSwabVal, 'code39', { includecheck: true});
 
   const pSelfSwabVal = generatepSelfSwab();
   document.getElementById('pSelfSwabValue').textContent = pSelfSwabVal;
-  render1DBarcode('pSelfSwabBarcode', pSelfSwabVal, { format: "CODE39", mod43: true });
+  // render1DBarcode('pSelfSwabBarcode', pSelfSwabVal, { format: "CODE39", mod43: true });
+  renderBarcode('pSelfSwabBarcode', pSelfSwabVal, 'code39', { includecheck: true});
 
 }
 
