@@ -57,21 +57,33 @@
                 <option value="datamatrix">Data Matrix</option>
               </select>
             </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="btnRegex" type="button" class="py-2 px-4 rounded-md font-medium text-sm transition-colors bg-indigo-600 text-white shadow-inner">
+                Regex
+              </button>
+              <button id="btnCustomData" type="button" class="py-2 px-4 rounded-md font-medium text-sm transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                Data
+              </button>
+            </div>
             <div>
-                <label for="customData" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data</label>
-                <input type="text" id="customData" placeholder="Enter barcode data here" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
+              <label id="inputLabel" for="customData" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Regex Pattern</label>
+              <input type="text" id="customData" placeholder="e.g., ^[A-Z]{3}\d{4}$" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
-            <button id="generateCustomBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition-colors">Generate</button>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <button id="generateOneBtn" class="w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md transition-colors">
+                Generate One
+              </button>
+              <button id="generateLotBtn" class="w-full bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:hover:bg-green-700 disabled:cursor-not-allowed">
+                Generate A Lot
+              </button>
+            </div>
         </div>
-        <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] cursor-pointer group">
-            <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <!-- TODO might be able to replace this with just one? -->
-              <svg id="customBarcodeSvg" class="hidden"></svg>
-              <canvas id="customBarcodeCanvas" class="hidden"></canvas>
-            </div>
-            <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
-            <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>
+        <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] h-full cursor-pointer group">
+          <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <canvas id="customBarcodeCanvas" class="hidden max-w-full h-auto object-contain"></canvas>
           </div>
+          <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
+          <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>
         </div>
       </div>
     </section>
@@ -82,17 +94,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <div onclick="showFocusedView('code39')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">Code39</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="code39Barcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="code39Barcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="code39Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('code39check')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-sky-600 dark:text-sky-400">Code39 (Check Digit)</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="code39CheckDigitBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="code39CheckDigitBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="code39CheckDigitValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('code128')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-400">Code128</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="code128Barcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="code128Barcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="code128Value" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <!-- <div onclick="showFocusedView('code93')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
@@ -102,12 +114,12 @@
         </div> -->
         <div onclick="showFocusedView('qr')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-fuchsia-600 dark:text-fuchsia-400">QR Code</h3>
-          <div class="w-28 h-28 flex items-center justify-center"><canvas id="qrCode"></canvas></div>
+          <div class="w-28 h-28 flex items-center justify-center"><canvas id="qrCode" class="p-1"></canvas></div>
           <p id="qrCodeValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
         </div>
         <div onclick="showFocusedView('datamatrix')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Data Matrix</h3>
-          <div class="w-28 h-28 flex items-center justify-center"><canvas id="dataMatrixCode"></canvas></div>
+          <div class="w-28 h-28 flex items-center justify-center"><canvas id="dataMatrixCode" class="p-1"></canvas></div>
           <p id="dataMatrixValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
         </div>
       </div>
@@ -119,32 +131,32 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <div onclick="showFocusedView('ups')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-yellow-500">UPS Tracking</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="upsBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="upsBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="upsValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
         </div>
         <div onclick="showFocusedView('fedex')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-purple-600 dark:text-purple-400">FedEx Tracking</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="fedexBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="fedexBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="fedexValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
         </div>
         <div onclick="showFocusedView('dhl')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-red-600 dark:text-red-500">DHL Tracking</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="dhlBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="dhlBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="dhlValue" class="mt-4 text-sm font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md break-all"></p>
         </div>
         <div onclick="showFocusedView('marken')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-green-600 dark:text-green-400">Marken Tracking</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="markenBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="markenBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="markenValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
           <div onclick="showFocusedView('worldcourier')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-blue-600 dark:text-blue-400">World Courier</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="worldCourierBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="worldCourierBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="worldCourierValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('quickstat')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-indigo-600 dark:text-indigo-400">Quickstat</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="quickstatBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="quickstatBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="quickstatValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
       </div>
@@ -156,22 +168,22 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <div onclick="showFocusedView('mlm')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-rose-600 dark:text-rose-400">^\d{12}$</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="mlmBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="mlmBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="mlmValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('pScanned')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-amber-600 dark:text-amber-400">^[0-9A-HJ-NPR-TV-Z]+$ (Limited to 6)</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="pScannedBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="pScannedBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="pScannedValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('pSiteSwab')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-teal-600 dark:text-teal-400">^[0-9A-HJ-NPR-TV-Z]{6}$</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="pSiteSwabBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="pSiteSwabBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="pSiteSwabValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
         <div onclick="showFocusedView('pSelfSwab')" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition-transform transform hover:scale-105 cursor-pointer">
           <h3 class="text-xl font-semibold mb-4 text-violet-600 dark:text-violet-400">^[0-9A-HJ-NPR-TV-Z]{7}$</h3>
-          <div class="w-full h-28 flex items-center justify-center"><canvas id="pSelfSwabBarcode" class="max-w-full max-h-full"></canvas></div>
+          <div class="w-full h-28 flex items-center justify-center"><canvas id="pSelfSwabBarcode" class="max-w-full max-h-full bg-white p-1"></canvas></div>
           <p id="pSelfSwabValue" class="mt-4 text-lg font-mono bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md"></p>
         </div>
       </div>
@@ -181,10 +193,8 @@
 
   <div id="focusedView" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex-col items-center justify-center p-8 hidden z-50">
     <h2 id="focusedTitle" class="text-4xl font-bold text-white mb-8"></h2>
-    <div id="focusedBarcodeContainer" class="bg-white p-8 rounded-lg">
-      <!-- TODO maybe this one too-->
-      <svg id="focusedBarcodeSvg" class="hidden"></svg>
-      <canvas id="focusedBarcodeCanvas" class="hidden"></canvas>
+    <div id="focusedBarcodeContainer" class="bg-white p-8 rounded-lg max-w-full flex justify-center overflow-hidden">
+      <canvas id="focusedBarcodeCanvas" class="hidden max-w-full h-auto object-contain"></canvas></canvas>
     </div>
     <p id="focusedValue" class="mt-6 text-2xl font-mono bg-gray-700 text-white px-4 py-2 rounded-md"></p>
     <button onclick="hideFocusedView()" class="mt-8 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg transition-colors text-lg">Close</button>
