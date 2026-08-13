@@ -6,11 +6,7 @@ const FOCUSED_UPDATE_INTERVAL = 500;
 
 let focusedIntervalId = null;
 
-// --- Helper Functions ---
-// function generateStringFromRegex(regex) {
-//   return new RandExp(regex).gen();
-// }
-
+// --- String Generation Functions ---
 function generateRandomString(length, characters) {
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -30,7 +26,6 @@ function generateRandomNumeric(length) {
   return generateRandomString(length, '0123456789');
 }
 
-// --- String Generation ---
 const BarcodeEngines = {
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
   DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/), // internal regex has a * instead of {6} but that's too much
@@ -224,67 +219,110 @@ function hideFocusedView() {
 }
 
 // --- Custom Barcode Generator ---
-let currentCustomMode = 'regex'; // 'regex' or 'custom'
-
+// DOM Elements
+const customTypeSelect = document.getElementById('customType');
 const btnRegex = document.getElementById('btnRegex');
 const btnCustomData = document.getElementById('btnCustomData');
 const inputLabel = document.getElementById('inputLabel');
 const customDataInput = document.getElementById('customData');
+const generateOneBtn = document.getElementById('generateOneBtn');
 const generateLotBtn = document.getElementById('generateLotBtn');
 
+const customCanvasEl = document.getElementById('customBarcodeCanvas');
+const customValueDisplay = document.getElementById('customValueDisplay');
+const customErrorDisplay = document.getElementById('customErrorDisplay');
+
+// State
+let currentCustomMode = 'regex'; // 'regex' or 'custom'
+let customLoopIntervalId = null;
+
 // Define the active and inactive classes
-const activeClasses = ['bg-indigo-600', 'text-white', 'shadow-inner'];
-const inactiveClasses = ['bg-gray-100', 'text-gray-600', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600'];
+const activeBtnClasses = ['bg-indigo-600', 'text-white', 'shadow-inner'];
+const inactiveBtnClasses = ['bg-gray-100', 'text-gray-600', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600'];
 
 function setMode(mode) {
   currentCustomMode = mode;
+
+  stopLoopGeneration();
   
   if (mode === 'regex') {
     // Style Regex button as active
-    btnRegex.classList.remove(...inactiveClasses);
-    btnRegex.classList.add(...activeClasses);
+    btnRegex.classList.remove(...inactiveBtnClasses);
+    btnRegex.classList.add(...activeBtnClasses);
     
     // Style Custom Data button as inactive
-    btnCustomData.classList.remove(...activeClasses);
-    btnCustomData.classList.add(...inactiveClasses);
+    btnCustomData.classList.remove(...activeBtnClasses);
+    btnCustomData.classList.add(...inactiveBtnClasses);
     
     // Update input UI
     inputLabel.textContent = "Regex Pattern";
     customDataInput.placeholder = "e.g., ^[A-Z]{3}\\d{4}$";
     customDataInput.value = ""; 
     
-    // Enable "Generate A Lot" <-- NEW
     generateLotBtn.disabled = false;
-    
   } else {
     // Style Custom Data button as active
-    btnCustomData.classList.remove(...inactiveClasses);
-    btnCustomData.classList.add(...activeClasses);
+    btnCustomData.classList.remove(...inactiveBtnClasses);
+    btnCustomData.classList.add(...activeBtnClasses);
     
     // Style Regex button as inactive
-    btnRegex.classList.remove(...activeClasses);
-    btnRegex.classList.add(...inactiveClasses);
+    btnRegex.classList.remove(...activeBtnClasses);
+    btnRegex.classList.add(...inactiveBtnClasses);
     
     // Update input UI
     inputLabel.textContent = "Data";
-    customDataInput.placeholder = "Enter barcode data here";
+    customDataInput.placeholder = "Enter exact barcode data here";
     customDataInput.value = ""; 
     
-    // Disable "Generate A Lot" <-- NEW
     generateLotBtn.disabled = true;
   }
 }
 
-// Attach event listeners
 btnRegex.addEventListener('click', () => setMode('regex'));
 btnCustomData.addEventListener('click', () => setMode('custom'));
 
+// TODO actual generation function
+function generateCustomBarcode() {
+  // TODO
+}
 
+function stopLoopGeneration() {
+  if (customLoopIntervalId) {
+    clearInterval(customLoopIntervalId);
+    customLoopIntervalId = null;
+  }
+}
+
+generateOneBtn.addEventListener('click', () => {
+  stopLoopGeneration();
+  generateCustomBarcode();
+});
+
+generateLotBtn.addEventListener('click', () => {
+  stopLoopGeneration(); // Prevent starting multiple intervals
+
+  const success = generateCustomBarcode(); // Start one
+
+  if (success) {
+    customLoopIntervalId = setInterval(generateCustomBarcode, GRID_UPDATE_INTERVAL);
+  }
+})
+
+// --- Initial Load and Event Listeners ---
+document.addEventListener('DOMContentLoaded', () => {
+  updateAllBarcodes();
+  setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
+  setMode('regex');
+  // document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
+});
+
+
+// PROBABLY DELETE
+/*
 function generateCustomBarcode() {
   const type = document.getElementById('customType').value;
   const data = document.getElementById('customData').value;
   
-  const svgEl = document.getElementById('customBarcodeSvg');
   const canvasEl = document.getElementById('customBarcodeCanvas');
   const valueDisplay = document.getElementById('customValueDisplay');
   const errorDisplay = document.getElementById('customErrorDisplay');
@@ -367,10 +405,4 @@ function showFocusedCustom() {
   }
 }
 
-
-// --- Initial Load and Event Listeners ---
-document.addEventListener('DOMContentLoaded', () => {
-  updateAllBarcodes();
-  setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
-  // document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
-});
+*/
