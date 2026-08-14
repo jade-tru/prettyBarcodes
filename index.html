@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barcode Generator</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bwip-js@4.1.1/dist/bwip-js-min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/gh/fent/randexp.js@0.5.3/build/randexp.min.js"></script>
 
   <link href="output.css" rel="stylesheet">
@@ -49,11 +47,11 @@
             <div>
               <label for="customType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode Type</label>
               <select id="customType" class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:ring-indigo-500 focus:border-indigo-500">
-                <option value="CODE128">Code 128</option>
-                <option value="CODE39">Code 39</option>
-                <option value="CODE39-MOD43">Code 39 (Check Digit)</option>
+                <option value="code128">Code 128</option>
+                <option value="code39">Code 39</option>
+                <option value="code39check">Code 39 (Check Digit)</option>
                 <!-- <option value="CODE93">Code 93</option> -->
-                <option value="qrcode">QR Code</option>
+                <option value="qr">QR Code</option>
                 <option value="datamatrix">Data Matrix</option>
               </select>
             </div>
@@ -80,7 +78,7 @@
         </div>
         <div onclick="showFocusedCustom()" class="md:col-span-2 mt-6 md:mt-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 min-h-[180px] h-full cursor-pointer group">
           <div id="customResultContainer" class="w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-            <canvas id="customBarcodeCanvas" class="hidden max-w-full h-auto object-contain"></canvas>
+            <canvas id="customBarcodeCanvas" class="hidden max-w-full h-auto object-contain bg-white p-2"></canvas>
           </div>
           <p id="customValueDisplay" class="mt-4 text-lg font-mono text-center break-all"></p>
           <p id="customErrorDisplay" class="mt-2 text-red-500 font-semibold"></p>

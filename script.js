@@ -6,11 +6,7 @@ const FOCUSED_UPDATE_INTERVAL = 500;
 
 let focusedIntervalId = null;
 
-// --- Helper Functions ---
-// function generateStringFromRegex(regex) {
-//   return new RandExp(regex).gen();
-// }
-
+// --- String Generation Functions ---
 function generateRandomString(length, characters) {
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -30,7 +26,6 @@ function generateRandomNumeric(length) {
   return generateRandomString(length, '0123456789');
 }
 
-// --- String Generation ---
 const BarcodeEngines = {
   Marken: new RandExp(/^([\d]{3}X[\d]{8})$/), 
   DHL: new RandExp(/^(\d{10}|JJD[A-Za-z0-9]{7})$/), // internal regex has a * instead of {6} but that's too much
@@ -50,38 +45,7 @@ function generateStringFromEngine(symbologyKey) {
   return engine.gen();
 }
 
-// --- Generic Barcode Generation Logic ---
-function generateCode39Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
-function generateCode128Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH); }
-// function generateCode93Value() { return generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true); }
-function generate2DCodeValue() { return generateRandomAlphanumeric(QR_DATA_LENGTH); }
-
-// --- AWB GENERATORS ---
-function generateUPSTracking() { return '1Z' + generateRandomAlphanumeric(16, true); } 
-function generateFedExTracking() { return generateRandomNumeric(14); } // technically this should be 12-34 digits but that got too long
-function generateDHLTracking() { return generateStringFromEngine('DHL'); }
-function generateMarkenTracking() { return generateStringFromEngine('Marken'); }
-function generateWorldCourierTracking() { return generateRandomNumeric(9); }
-function generateQuickstatTracking() { return generateRandomNumeric(9) + 'W'; }
-
-// --- SPECIFIC GENERATORS ---
-function generateMLMBarcode() { return generateRandomNumeric(12); }
-function generatepScanned() { return generateStringFromEngine('pScanned'); }
-function generatepSiteSwab() { return generateStringFromEngine('pSiteSwab'); }
-function generatepSelfSwab() { return generateStringFromEngine('pSelfSwab'); }
-
-
 // --- Rendering Functions ---
-function render1DBarcode(elementId, value, options = {}) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  const defaultOptions = {
-    lineColor: document.body.classList.contains('dark') ? "#FFFFFF" : "#000000",
-    width: 2, height: 80, displayValue: false
-  };
-  JsBarcode(el, value, { ...defaultOptions, ...options }); // ALSO HERE
-}
-
 function renderBarcode(elementId, value, type, options = {}) {
   const canvas = document.getElementById(elementId);
   if (!canvas) return;
@@ -90,7 +54,7 @@ function renderBarcode(elementId, value, type, options = {}) {
     bcid: type,           // The barcode type (e.g., 'code128', 'qrcode')
     text: value,          // The data to encode
     scale: 3,             // Overall scaling factor
-    height: 5,           // Bar height (mostly affects 1D barcodes)
+    height: 5,            // Bar height (mostly affects 1D barcodes)
     width: 10,
     includetext: false    // Hide human-readable text by default
   };
@@ -102,137 +66,145 @@ function renderBarcode(elementId, value, type, options = {}) {
   }
 }
 
+const barcodeConfigs = {
+  'code39': { 
+    title: 'Code39', type: 'code39', 
+    valueId: 'code39Value', canvasId: 'code39Barcode',
+    generatorFn: () => generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true)
+  },
+  'code39check': { 
+    title: 'Code39 (Check Digit)', type: 'code39', 
+    valueId: 'code39CheckDigitValue', canvasId: 'code39CheckDigitBarcode',
+    generatorFn: () => generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH, true), 
+    options: { includecheck: true } 
+  },
+  'code128': { 
+    title: 'Code128', type: 'code128', 
+    valueId: 'code128Value', canvasId: 'code128Barcode',
+    generatorFn: () => generateRandomAlphanumeric(GENERIC_BARCODE_LENGTH) 
+  },
+  'qr': { 
+    title: 'QR Code', type: 'qrcode', is2D: true, 
+    valueId: 'qrCodeValue', canvasId: 'qrCode',
+    generatorFn: () => generateRandomAlphanumeric(QR_DATA_LENGTH),
+    options: { height: 10 } 
+  },
+  'datamatrix': { 
+    title: 'Data Matrix', type: 'datamatrix', is2D: true, 
+    valueId: 'dataMatrixValue', canvasId: 'dataMatrixCode',
+    generatorFn: () => generateRandomAlphanumeric(QR_DATA_LENGTH),
+    options: { height: 10 } 
+  },
+  'ups': { 
+    title: 'UPS Tracking', type: 'code128', 
+    valueId: 'upsValue', canvasId: 'upsBarcode',
+    generatorFn: () => '1Z' + generateRandomAlphanumeric(16, true) 
+  },
+  'fedex': { 
+    title: 'FedEx Tracking', type: 'code128', 
+    valueId: 'fedexValue', canvasId: 'fedexBarcode',
+    generatorFn: () => generateRandomNumeric(14) 
+  },
+  'dhl': { 
+    title: 'DHL Tracking', type: 'code128', 
+    valueId: 'dhlValue', canvasId: 'dhlBarcode',
+    generatorFn: () => generateStringFromEngine('DHL') 
+  },
+  'marken': { 
+    title: 'Marken Tracking', type: 'code128', 
+    valueId: 'markenValue', canvasId: 'markenBarcode',
+    generatorFn: () => generateStringFromEngine('Marken') 
+  },
+  'worldcourier': { 
+    title: 'World Courier', type: 'code128', 
+    valueId: 'worldCourierValue', canvasId: 'worldCourierBarcode',
+    generatorFn: () => generateRandomNumeric(9) 
+  },
+  'quickstat': { 
+    title: 'Quickstat', type: 'code128', 
+    valueId: 'quickstatValue', canvasId: 'quickstatBarcode',
+    generatorFn: () => generateRandomNumeric(9) + 'W' 
+  },
+  'mlm': { 
+    title: '^\\d{12}$', type: 'code128', 
+    valueId: 'mlmValue', canvasId: 'mlmBarcode',
+    generatorFn: () => generateRandomNumeric(12) 
+  },
+  'pScanned': { 
+    title: '^[0-9A-HJ-NPR-TV-Z]+$', type: 'code39', 
+    valueId: 'pScannedValue', canvasId: 'pScannedBarcode',
+    generatorFn: () => generateStringFromEngine('pScanned'), 
+    options: { includecheck: true } 
+  },
+  'pSiteSwab': { 
+    title: '^[0-9A-HJ-NPR-TV-Z]{6}$', type: 'code39', 
+    valueId: 'pSiteSwabValue', canvasId: 'pSiteSwabBarcode',
+    generatorFn: () => generateStringFromEngine('pSiteSwab'), 
+    options: { includecheck: true } 
+  },
+  'pSelfSwab': { 
+    title: '^[0-9A-HJ-NPR-TV-Z]{7}$', type: 'code39', 
+    valueId: 'pSelfSwabValue', canvasId: 'pSelfSwabBarcode',
+    generatorFn: () => generateStringFromEngine('pSelfSwab'), 
+    options: { includecheck: true } 
+  }
+};
+
 
 // --- Main Grid Update ---
 function updateAllBarcodes() {
-  // Symbologies
-  const code39Val = generateCode39Value();
-  document.getElementById('code39Value').textContent = code39Val;
-  renderBarcode('code39Barcode', code39Val, 'code39');
-
-  const code39CheckDigitVal = generateCode39Value();
-  document.getElementById('code39CheckDigitValue').textContent = code39CheckDigitVal;
-  renderBarcode('code39CheckDigitBarcode', code39CheckDigitVal, 'code39', { includecheck: true});
-
-  const code128Val = generateCode128Value();
-  document.getElementById('code128Value').textContent = code128Val;
-  renderBarcode('code128Barcode', code128Val, 'code128');
-
-  // const code93Val = generateCode93Value();
-  // document.getElementById('code93Value').textContent = code93Val;
-  // renderBarcode('code93Barcode', code93Val, 'code93', { scale: 2, height: 15 });
-
-  const qrVal = generate2DCodeValue();
-  document.getElementById('qrCodeValue').textContent = qrVal;
-  renderBarcode('qrCode', qrVal, 'qrcode', {height: 10});
-
-  const dmVal = generate2DCodeValue();
-  document.getElementById('dataMatrixValue').textContent = dmVal;
-  renderBarcode('dataMatrixCode', dmVal, 'datamatrix', {height: 10});
-
-  // Shipment Labels
-  const upsVal = generateUPSTracking();
-  document.getElementById('upsValue').textContent = upsVal;
-  renderBarcode('upsBarcode', upsVal, 'code128');
-
-  const fedexVal = generateFedExTracking();
-  document.getElementById('fedexValue').textContent = fedexVal;
-  renderBarcode('fedexBarcode', fedexVal, 'code128');
-
-  const dhlVal = generateDHLTracking();
-  document.getElementById('dhlValue').textContent = dhlVal;
-  renderBarcode('dhlBarcode', dhlVal, 'code128');
-
-  const markenVal = generateMarkenTracking();
-  document.getElementById('markenValue').textContent = markenVal;
-  renderBarcode('markenBarcode', markenVal, 'code128');
-  
-  const wcVal = generateWorldCourierTracking();
-  document.getElementById('worldCourierValue').textContent = wcVal;
-  renderBarcode('worldCourierBarcode', wcVal, 'code128');
-
-  const quickstatVal = generateQuickstatTracking();
-  document.getElementById('quickstatValue').textContent = quickstatVal;
-  renderBarcode('quickstatBarcode', quickstatVal, 'code128');
-
-  // Specific
-  const mlmVal = generateMLMBarcode();
-  document.getElementById('mlmValue').textContent = mlmVal;
-  renderBarcode('mlmBarcode', mlmVal, 'code128');
-
-  const pScannedVal = generatepScanned();
-  document.getElementById('pScannedValue').textContent = pScannedVal; 
-  renderBarcode('pScannedBarcode', pScannedVal, 'code39', { includecheck: true});
-
-  const pSiteSwabVal = generatepSiteSwab();
-  document.getElementById('pSiteSwabValue').textContent = pSiteSwabVal;
-  renderBarcode('pSiteSwabBarcode', pSiteSwabVal, 'code39', { includecheck: true});
-
-  const pSelfSwabVal = generatepSelfSwab();
-  document.getElementById('pSelfSwabValue').textContent = pSelfSwabVal;
-  renderBarcode('pSelfSwabBarcode', pSelfSwabVal, 'code39', { includecheck: true});
-
+  Object.values(barcodeConfigs).forEach(config => {
+    // Generate the value
+    const value = config.generatorFn();
+    
+    // Update the DOM text
+    const textElement = document.getElementById(config.valueId);
+    if (textElement) textElement.textContent = value;
+    
+    // Render the barcode
+    renderBarcode(config.canvasId, value, config.type, config.options);
+  });
 }
 
 // --- Focused View Logic ---
-const barcodeConfigs = {
-  'code39':       { title: 'Code39', type: 'code39', generatorFn: generateCode39Value },
-  'code39check':  { title: 'Code39 (Check Digit)', type: 'code39', generatorFn: generateCode39Value, options: { includecheck: true } },
-  'code128':      { title: 'Code128', type: 'code128', generatorFn: generateCode128Value },
-  'qr':           { title: 'QR Code', type: 'qrcode', generatorFn: generate2DCodeValue, is2D: true },
-  'datamatrix':   { title: 'Data Matrix', type: 'datamatrix', generatorFn: generate2DCodeValue, is2D: true },
-  
-  'ups':          { title: 'UPS Tracking', type: 'code128', generatorFn: generateUPSTracking },
-  'fedex':        { title: 'FedEx Tracking', type: 'code128', generatorFn: generateFedExTracking },
-  'dhl':          { title: 'DHL Tracking', type: 'code128', generatorFn: generateDHLTracking },
-  'marken':       { title: 'Marken Tracking', type: 'code128', generatorFn: generateMarkenTracking },
-  'worldcourier': { title: 'World Courier', type: 'code128', generatorFn: generateWorldCourierTracking },
-  'quickstat':    { title: 'Quickstat', type: 'code128', generatorFn: generateQuickstatTracking },
-  'mlm':          { title: '^\\d{12}$', type: 'code128', generatorFn: generateMLMBarcode },
-  
-  'pScanned':     { title: '^[0-9A-HJ-NPR-TV-Z]+$', type: 'code39', generatorFn: generatepScanned, options: { includecheck: true } },
-  'pSiteSwab':    { title: '^[0-9A-HJ-NPR-TV-Z]{6}$', type: 'code39', generatorFn: generatepSiteSwab, options: { includecheck: true } },
-  'pSelfSwab':    { title: '^[0-9A-HJ-NPR-TV-Z]{7}$', type: 'code39', generatorFn: generatepSelfSwab, options: { includecheck: true } }
-};
+function showFocusedView(input) {
+  // Input can either be a config (from custom view) or just a string
+  const config = typeof input === 'string' ? barcodeConfigs[input] : input;
+  if (!config) return;
 
-function showFocusedView(barcodeKey) {
   document.getElementById('mainGrid').classList.add('hidden');
   const focusedView = document.getElementById('focusedView');
   focusedView.classList.remove('hidden');
   focusedView.classList.add('flex');
   
-  const canvasEl = document.getElementById('focusedBarcodeCanvas');
-  canvasEl.classList.remove('hidden'); // Ensure canvas is visible
-
-  // Look up the configuration based on what the user clicked
-  const config = barcodeConfigs[barcodeKey];
-  if (!config) return; // Safety check in case of a bad key
-
+  document.getElementById('focusedBarcodeCanvas').classList.remove('hidden');
   document.getElementById('focusedTitle').textContent = config.title;
 
-  // Set default sizes based on 1D vs 2D
-  // bwip-js ignores height for 2D codes, so we only pass scale for 2D
+  // Merge the base sizing with any specific options (like includecheck and 1D vs 2D)
   const baseOptions = config.is2D 
-    ? { scale: 8, height: 8, width: 8 } 
+    ? { scale: 8, height: 8, width: 10 }
     : { scale: 4, height: 15, width: 60 };
-
-  // Merge the base sizing with any specific options (like includecheck)
   const finalOptions = { ...baseOptions, ...(config.options || {}) };
 
   const updateFocused = () => {
     const newValue = config.generatorFn();
     document.getElementById('focusedValue').textContent = newValue;
-    
-    // Use the unified function
     renderBarcode('focusedBarcodeCanvas', newValue, config.type, finalOptions);
   };
 
   // Run immediately, then start the interval
   updateFocused();
-  
-  // Good practice: clear the interval if one is already running before starting a new one
-  if (window.focusedIntervalId) clearInterval(window.focusedIntervalId);
-  window.focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+
+  // Clear the interval if one is already running before starting a new one
+  if (focusedIntervalId) {
+    clearInterval(focusedIntervalId);
+    focusedIntervalId = null;
+  }
+
+  // Only start the loop if this config isn't static (is not a string)
+  if (!config.static) {
+    focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+  }
 }
 
 
@@ -251,153 +223,181 @@ function hideFocusedView() {
 }
 
 // --- Custom Barcode Generator ---
-let currentCustomMode = 'regex'; // 'regex' or 'custom'
-
+// DOM Elements
+const customTypeSelect = document.getElementById('customType');
 const btnRegex = document.getElementById('btnRegex');
 const btnCustomData = document.getElementById('btnCustomData');
 const inputLabel = document.getElementById('inputLabel');
 const customDataInput = document.getElementById('customData');
-const generateLotBtn = document.getElementById('generateLotBtn'); // <-- NEW
+const generateOneBtn = document.getElementById('generateOneBtn');
+const generateLotBtn = document.getElementById('generateLotBtn');
+
+const customCanvasEl = document.getElementById('customBarcodeCanvas');
+const customValueDisplay = document.getElementById('customValueDisplay');
+const customErrorDisplay = document.getElementById('customErrorDisplay');
+
+// State
+let currentCustomMode = 'regex'; // 'regex' or 'custom'
+let customLoopIntervalId = null;
 
 // Define the active and inactive classes
-const activeClasses = ['bg-indigo-600', 'text-white', 'shadow-inner'];
-const inactiveClasses = ['bg-gray-100', 'text-gray-600', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600'];
+const activeBtnClasses = ['bg-indigo-600', 'text-white', 'shadow-inner'];
+const inactiveBtnClasses = ['bg-gray-100', 'text-gray-600', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:text-gray-300', 'dark:hover:bg-gray-600'];
 
 function setMode(mode) {
   currentCustomMode = mode;
+
+  stopLoopGeneration();
   
   if (mode === 'regex') {
     // Style Regex button as active
-    btnRegex.classList.remove(...inactiveClasses);
-    btnRegex.classList.add(...activeClasses);
+    btnRegex.classList.remove(...inactiveBtnClasses);
+    btnRegex.classList.add(...activeBtnClasses);
     
     // Style Custom Data button as inactive
-    btnCustomData.classList.remove(...activeClasses);
-    btnCustomData.classList.add(...inactiveClasses);
+    btnCustomData.classList.remove(...activeBtnClasses);
+    btnCustomData.classList.add(...inactiveBtnClasses);
     
     // Update input UI
     inputLabel.textContent = "Regex Pattern";
     customDataInput.placeholder = "e.g., ^[A-Z]{3}\\d{4}$";
     customDataInput.value = ""; 
     
-    // Enable "Generate A Lot" <-- NEW
     generateLotBtn.disabled = false;
-    
   } else {
     // Style Custom Data button as active
-    btnCustomData.classList.remove(...inactiveClasses);
-    btnCustomData.classList.add(...activeClasses);
+    btnCustomData.classList.remove(...inactiveBtnClasses);
+    btnCustomData.classList.add(...activeBtnClasses);
     
     // Style Regex button as inactive
-    btnRegex.classList.remove(...activeClasses);
-    btnRegex.classList.add(...inactiveClasses);
+    btnRegex.classList.remove(...activeBtnClasses);
+    btnRegex.classList.add(...inactiveBtnClasses);
     
     // Update input UI
     inputLabel.textContent = "Data";
-    customDataInput.placeholder = "Enter barcode data here";
+    customDataInput.placeholder = "Enter exact barcode data here";
     customDataInput.value = ""; 
     
-    // Disable "Generate A Lot" <-- NEW
     generateLotBtn.disabled = true;
   }
 }
 
-// Attach event listeners
 btnRegex.addEventListener('click', () => setMode('regex'));
-btnCustomData.addEventListener('click', () => setMode('custom'));
-
+btnCustomData.addEventListener('click', () => setMode('data'));
 
 function generateCustomBarcode() {
-  const type = document.getElementById('customType').value;
-  const data = document.getElementById('customData').value;
-  
-  const svgEl = document.getElementById('customBarcodeSvg');
-  const canvasEl = document.getElementById('customBarcodeCanvas');
-  const valueDisplay = document.getElementById('customValueDisplay');
-  const errorDisplay = document.getElementById('customErrorDisplay');
+  console.log('called generate custom barcode');
+  const inputValue = customDataInput.value.trim();
 
-  // Reset UI
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-  valueDisplay.textContent = '';
-  errorDisplay.textContent = '';
+  console.log(inputValue);
+  const selectedType = customTypeSelect.value;
 
-  if (!data.trim()) {
-    errorDisplay.textContent = 'Please enter data for the barcode.';
-    return;
+  // Reset displays
+  customErrorDisplay.textContent = '';
+  customCanvasEl.classList.add('hidden');
+  customValueDisplay.textContent = '';
+
+  if (!inputValue) {
+    customErrorDisplay.textContent = 'Please enter a value.';
+    stopLoopGeneration();
+    return false;
   }
+
+  let barcodeData = '';
+
+  // Determine the string to turn into a barcode
+  if (currentCustomMode === 'data') {
+    barcodeData = inputValue;
+  } else if (currentCustomMode === 'regex') {
+    try {
+      new RegExp(inputValue);
+      barcodeData = new RandExp(inputValue).gen();
+    } catch (e) {
+      customErrorDisplay.textContent = 'Invalid regex.';
+      stopLoopGeneration();
+      return false;
+    }
+  }
+
+  // Render the actual barcode
+  const config = barcodeConfigs[selectedType];
+  const baseOptions = config.is2D 
+    ? { scale: 8, height: 8, width: 10 }
+    : { scale: 4, height: 15, width: 60 };
+  const finalOptions = { ...baseOptions, ...(config.options || {}) };
 
   try {
-    valueDisplay.textContent = data;
-  if (type === 'qrcode' || type === 'datamatrix') {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
-  }
+    customValueDisplay.textContent = barcodeData;
+    customCanvasEl.classList.remove('hidden');
+
+    renderBarcode('customBarcodeCanvas', barcodeData, config.type, finalOptions);
+    return true;
   } catch (e) {
     console.error("Barcode Generation Error:", e);
-    valueDisplay.textContent = '';
-    errorDisplay.textContent = e.message.includes('Invalid') 
-      ? `Invalid characters for ${type}.`
+    customCanvasEl.classList.add('hidden');
+    customValueDisplay.textContent = '';
+    customErrorDisplay.textContent = e.message.includes('Invalid') 
+      ? `Invalid characters for ${config.title}.`
       : 'Could not generate barcode.';
+    stopLotGeneration();
+    return false;
   }
 }
 
 function showFocusedCustom() {
-  const data = document.getElementById('customValueDisplay').textContent;
-  if (!data) return; // Don't open modal if no barcode is generated
+  const inputValue = customDataInput.value.trim();
+  const selectedType = customTypeSelect.value;
+  const baseConfig = barcodeConfigs[selectedType];
 
-  const type = document.getElementById('customType').value;
-  const is2D = type === 'qrcode' || type === 'datamatrix';
-  
-  document.getElementById('mainGrid').classList.add('hidden');
-  const focusedView = document.getElementById('focusedView');
-  focusedView.classList.remove('hidden');
-  focusedView.classList.add('flex');
+  // If no barcode generated yet, do nothing when clicked
+  if (!customValueDisplay.textContent) return;
 
-  if (focusedIntervalId) {
-    clearInterval(focusedIntervalId);
-    focusedIntervalId = null;
-  }
+  const isLooping = (customLoopIntervalId !== null);
 
-  // const svgEl = document.getElementById('focusedBarcodeSvg');
-  const canvasEl = document.getElementById('focusedBarcodeCanvas');
-  
-  const typeSelect = document.getElementById('customType');
-  const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
-  document.getElementById('focusedTitle').textContent = selectedOptionText;
-  document.getElementById('focusedValue').textContent = data;
+  const currentDisplayedValue = customValueDisplay.textContent;
 
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
+  // Create temporary config object that look like barcodeConfigs
+  const customConfig = {
+    title: `Custom (${baseConfig.title})`,
+    type: baseConfig.type,
+    is2D: baseConfig.is2D,
+    options: baseConfig.options,
+    generatorFn: () => {
+      if (currentCustomMode === 'regex' && isLooping) {
+        return new RandExp(inputValue).gen();
+      }
+      return currentDisplayedValue;
+    },
+    static: !isLooping
+  };
+  showFocusedView(customConfig);
+}
 
-  if (is2D) {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
+function stopLoopGeneration() {
+  if (customLoopIntervalId) {
+    clearInterval(customLoopIntervalId);
+    customLoopIntervalId = null;
   }
 }
 
+generateOneBtn.addEventListener('click', () => {
+  stopLoopGeneration();
+  generateCustomBarcode();
+});
+
+generateLotBtn.addEventListener('click', () => {
+  stopLoopGeneration(); // Prevent starting multiple intervals
+
+  const success = generateCustomBarcode(); // Start one
+
+  if (success) {
+    customLoopIntervalId = setInterval(generateCustomBarcode, GRID_UPDATE_INTERVAL);
+  }
+})
 
 // --- Initial Load and Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
   updateAllBarcodes();
   setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
-  // document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
+  setMode('regex');
 });
