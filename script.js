@@ -54,7 +54,7 @@ function renderBarcode(elementId, value, type, options = {}) {
     bcid: type,           // The barcode type (e.g., 'code128', 'qrcode')
     text: value,          // The data to encode
     scale: 3,             // Overall scaling factor
-    height: 5,           // Bar height (mostly affects 1D barcodes)
+    height: 5,            // Bar height (mostly affects 1D barcodes)
     width: 10,
     includetext: false    // Hide human-readable text by default
   };
@@ -167,13 +167,12 @@ function updateAllBarcodes() {
 }
 
 // --- Focused View Logic ---
-function showFocusedView(barcodeKey) {
-  // Look up the configuration based on what the user clicked
-  const config = barcodeConfigs[barcodeKey];
-  if (!config) return; // Safety check in case of a bad key
+function showFocusedView(input) {
+  // Input can either be a config (from custom view) or just a string
+  const config = typeof input === 'string' ? barcodeConfigs[input] : input;
+  if (!config) return;
 
   document.getElementById('mainGrid').classList.add('hidden');
-
   const focusedView = document.getElementById('focusedView');
   focusedView.classList.remove('hidden');
   focusedView.classList.add('flex');
@@ -190,17 +189,22 @@ function showFocusedView(barcodeKey) {
   const updateFocused = () => {
     const newValue = config.generatorFn();
     document.getElementById('focusedValue').textContent = newValue;
-    
-    // Use the unified function
     renderBarcode('focusedBarcodeCanvas', newValue, config.type, finalOptions);
   };
 
   // Run immediately, then start the interval
   updateFocused();
-  
+
   // Clear the interval if one is already running before starting a new one
-  if (window.focusedIntervalId) clearInterval(window.focusedIntervalId);
-  window.focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+  if (focusedIntervalId) {
+    clearInterval(focusedIntervalId);
+    focusedIntervalId = null;
+  }
+
+  // Only start the loop if this config isn't static (is not a string)
+  if (!config.static) {
+    focusedIntervalId = setInterval(updateFocused, FOCUSED_UPDATE_INTERVAL);
+  }
 }
 
 
@@ -302,8 +306,6 @@ function generateCustomBarcode() {
   let barcodeData = '';
 
   // Determine the string to turn into a barcode
-  console.log(currentCustomMode);
-
   if (currentCustomMode === 'data') {
     barcodeData = inputValue;
   } else if (currentCustomMode === 'regex') {
@@ -316,8 +318,6 @@ function generateCustomBarcode() {
       return false;
     }
   }
-
-  console.log(barcodeData);
 
   // Render the actual barcode
   const config = barcodeConfigs[selectedType];
@@ -345,7 +345,32 @@ function generateCustomBarcode() {
 }
 
 function showFocusedCustom() {
-  // todo
+  const inputValue = customDataInput.value.trim();
+  const selectedType = customTypeSelect.value;
+  const baseConfig = barcodeConfigs[selectedType];
+
+  // If no barcode generated yet, do nothing when clicked
+  if (!customValueDisplay.textContent) return;
+
+  const isLooping = (customLoopIntervalId !== null);
+
+  const currentDisplayedValue = customValueDisplay.textContent;
+
+  // Create temporary config object that look like barcodeConfigs
+  const customConfig = {
+    title: `Custom (${baseConfig.title})`,
+    type: baseConfig.type,
+    is2D: baseConfig.is2D,
+    options: baseConfig.options,
+    generatorFn: () => {
+      if (currentCustomMode === 'regex' && isLooping) {
+        return new RandExp(inputValue).gen();
+      }
+      return currentDisplayedValue;
+    },
+    static: !isLooping
+  };
+  showFocusedView(customConfig);
 }
 
 function stopLoopGeneration() {
@@ -375,96 +400,4 @@ document.addEventListener('DOMContentLoaded', () => {
   updateAllBarcodes();
   setInterval(updateAllBarcodes, GRID_UPDATE_INTERVAL);
   setMode('regex');
-  // document.getElementById('generateCustomBtn').addEventListener('click', generateCustomBarcode);
 });
-
-
-// PROBABLY DELETE
-/*
-function generateCustomBarcode() {
-  const type = document.getElementById('customType').value;
-  const data = document.getElementById('customData').value;
-  
-  const canvasEl = document.getElementById('customBarcodeCanvas');
-  const valueDisplay = document.getElementById('customValueDisplay');
-  const errorDisplay = document.getElementById('customErrorDisplay');
-
-  // Reset UI
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-  valueDisplay.textContent = '';
-  errorDisplay.textContent = '';
-
-  if (!data.trim()) {
-    errorDisplay.textContent = 'Please enter data for the barcode.';
-    return;
-  }
-
-  try {
-    valueDisplay.textContent = data;
-  if (type === 'qrcode' || type === 'datamatrix') {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('customBarcodeCanvas', data, type, {scale: 5, width: 25, height: 25});
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 100, width: 3});
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('customBarcodeCanvas', data, 'code93', { scale: 3, height: 15, width: 55 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('customBarcodeSvg', data, { format: type, height: 100, width: 3 });
-  }
-  } catch (e) {
-    console.error("Barcode Generation Error:", e);
-    valueDisplay.textContent = '';
-    errorDisplay.textContent = e.message.includes('Invalid') 
-      ? `Invalid characters for ${type}.`
-      : 'Could not generate barcode.';
-  }
-}
-
-function showFocusedCustom() {
-  const data = document.getElementById('customValueDisplay').textContent;
-  if (!data) return; // Don't open modal if no barcode is generated
-
-  const type = document.getElementById('customType').value;
-  const is2D = type === 'qrcode' || type === 'datamatrix';
-  
-  document.getElementById('mainGrid').classList.add('hidden');
-  const focusedView = document.getElementById('focusedView');
-  focusedView.classList.remove('hidden');
-  focusedView.classList.add('flex');
-
-  if (focusedIntervalId) {
-    clearInterval(focusedIntervalId);
-    focusedIntervalId = null;
-  }
-
-  // const svgEl = document.getElementById('focusedBarcodeSvg');
-  const canvasEl = document.getElementById('focusedBarcodeCanvas');
-  
-  const typeSelect = document.getElementById('customType');
-  const selectedOptionText = typeSelect.options[typeSelect.selectedIndex].text;
-  document.getElementById('focusedTitle').textContent = selectedOptionText;
-  document.getElementById('focusedValue').textContent = data;
-
-  svgEl.classList.add('hidden');
-  canvasEl.classList.add('hidden');
-
-  if (is2D) {
-    canvasEl.classList.remove('hidden');
-    renderBarcode('focusedBarcodeCanvas', data, type, { scale: 5, width: 20, height: 20 });
-  } else if (type === 'CODE39-MOD43') {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: 'CODE39', mod43: true, height: 150, width: 4 });
-  // } else if (type === 'CODE93') {
-  //   canvasEl.classList.remove('hidden');
-  //   renderBarcode('focusedBarcodeCanvas', data, 'code93', { scale: 4, height: 15, width: 50 });
-  } else {
-    svgEl.classList.remove('hidden');
-    render1DBarcode('focusedBarcodeSvg', data, { format: type, height: 150, width: 4 });
-  }
-}
-
-*/
