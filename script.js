@@ -279,11 +279,73 @@ function setMode(mode) {
 }
 
 btnRegex.addEventListener('click', () => setMode('regex'));
-btnCustomData.addEventListener('click', () => setMode('custom'));
+btnCustomData.addEventListener('click', () => setMode('data'));
 
-// TODO actual generation function
 function generateCustomBarcode() {
-  // TODO
+  console.log('called generate custom barcode');
+  const inputValue = customDataInput.value.trim();
+
+  console.log(inputValue);
+  const selectedType = customTypeSelect.value;
+
+  // Reset displays
+  customErrorDisplay.textContent = '';
+  customCanvasEl.classList.add('hidden');
+  customValueDisplay.textContent = '';
+
+  if (!inputValue) {
+    customErrorDisplay.textContent = 'Please enter a value.';
+    stopLoopGeneration();
+    return false;
+  }
+
+  let barcodeData = '';
+
+  // Determine the string to turn into a barcode
+  console.log(currentCustomMode);
+
+  if (currentCustomMode === 'data') {
+    barcodeData = inputValue;
+  } else if (currentCustomMode === 'regex') {
+    try {
+      new RegExp(inputValue);
+      barcodeData = new RandExp(inputValue).gen();
+    } catch (e) {
+      customErrorDisplay.textContent = 'Invalid regex.';
+      stopLoopGeneration();
+      return false;
+    }
+  }
+
+  console.log(barcodeData);
+
+  // Render the actual barcode
+  const config = barcodeConfigs[selectedType];
+  const baseOptions = config.is2D 
+    ? { scale: 8, height: 8, width: 10 }
+    : { scale: 4, height: 15, width: 60 };
+  const finalOptions = { ...baseOptions, ...(config.options || {}) };
+
+  try {
+    customValueDisplay.textContent = barcodeData;
+    customCanvasEl.classList.remove('hidden');
+
+    renderBarcode('customBarcodeCanvas', barcodeData, config.type, finalOptions);
+    return true;
+  } catch (e) {
+    console.error("Barcode Generation Error:", e);
+    customCanvasEl.classList.add('hidden');
+    customValueDisplay.textContent = '';
+    customErrorDisplay.textContent = e.message.includes('Invalid') 
+      ? `Invalid characters for ${config.title}.`
+      : 'Could not generate barcode.';
+    stopLotGeneration();
+    return false;
+  }
+}
+
+function showFocusedCustom() {
+  // todo
 }
 
 function stopLoopGeneration() {
